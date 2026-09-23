@@ -1,0 +1,30 @@
+schema:
+  - graph/schema.graphqls
+
+exec:
+  filename: graph/generated.go
+  package: graph
+
+model:
+  filename: graph/model/models_gen.go
+  package: model
+
+resolver:
+  layout: follow-schema
+  dir: graph
+  package: graph
+  filename_template: "{name}.resolvers.go"
+
+# Use hand-written Go types from these packages when a GraphQL type has the same name.
+autobind:
+  - dashboard/db
+  - dashboard/widgets
+
+models:
+  JSON:
+    model: github.com/99designs/gqlgen/graphql.Map
+  Int:
+    model:
+      - github.com/99designs/gqlgen/graphql.Int
+      - github.com/99designs/gqlgen/graphql.Int32
+      - github.com/99designs/gqlgen/graphql.Int64

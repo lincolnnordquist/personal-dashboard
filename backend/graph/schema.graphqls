@@ -1,0 +1,83 @@
+scalar JSON
+
+enum TemperatureUnit {
+  F
+  C
+}
+
+type Query {
+  widgets: [WidgetConfig!]!
+  "location is a display name echoed back in the result; Open-Meteo does not return place names."
+  weatherData(lat: Float!, lon: Float!, unit: TemperatureUnit = F, location: String): WeatherData
+  sportsData(sport: String!, teamIds: [String!]): SportsData
+  redditData(subreddits: [String!]!): [SubredditFeed!]!
+  youtubeData(channelIds: [String!]!): [YoutubeChannel!]!
+  dockerData: [DockerContainer!]!
+}
+
+type Mutation {
+  updateWidgetConfig(id: Int!, config: JSON!, position: Int): WidgetConfig!
+  toggleWidget(id: Int!, enabled: Boolean!): WidgetConfig!
+}
+
+type WidgetConfig {
+  id: Int!
+  widgetType: String!
+  config: JSON!
+  position: Int!
+  enabled: Boolean!
+}
+
+type WeatherData {
+  temperature: Float!
+  condition: String!
+  high: Float!
+  low: Float!
+  location: String!
+}
+
+type SportsData {
+  recentGames: [Game!]!
+  upcomingGames: [Game!]!
+}
+
+type Game {
+  homeTeam: String!
+  awayTeam: String!
+  homeScore: Int
+  awayScore: Int
+  status: String!
+  date: String!
+}
+
+type SubredditFeed {
+  subreddit: String!
+  posts: [RedditPost!]!
+}
+
+type RedditPost {
+  title: String!
+  score: Int!
+  commentCount: Int!
+  url: String!
+  author: String!
+}
+
+type YoutubeChannel {
+  channelName: String!
+  videos: [YoutubeVideo!]!
+}
+
+type YoutubeVideo {
+  title: String!
+  videoId: String!
+  publishedAt: String!
+  thumbnailUrl: String!
+}
+
+type DockerContainer {
+  name: String!
+  status: String!
+  image: String!
+  uptime: String!
+}
