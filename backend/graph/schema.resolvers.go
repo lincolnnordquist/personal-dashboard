@@ -116,8 +116,22 @@ func (r *queryResolver) RedditData(ctx context.Context, subreddits []string) ([]
 }
 
 // YoutubeData is the resolver for the youtubeData field.
-func (r *queryResolver) YoutubeData(ctx context.Context, channelIds []string) ([]*model.YoutubeChannel, error) {
-	return nil, errors.New("YoutubeData: not implemented yet")
+func (r *queryResolver) YoutubeData(ctx context.Context, channelIds []string) ([]*widgets.YoutubeChannel, error) {
+	channels := make([]*widgets.YoutubeChannel, 0, len(channelIds))
+	for _, id := range channelIds {
+		ref, err := widgets.NormalizeYouTubeChannel(id)
+		if err != nil {
+			graphql.AddError(ctx, err)
+			continue
+		}
+		channel, err := r.fetchYouTubeChannel(ctx, ref)
+		if err != nil {
+			graphql.AddError(ctx, err)
+			continue
+		}
+		channels = append(channels, channel)
+	}
+	return channels, nil
 }
 
 // DockerData is the resolver for the dockerData field.

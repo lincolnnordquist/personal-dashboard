@@ -155,6 +155,7 @@ type ComplexityRoot struct {
 	}
 
 	WidgetConfig struct {
+		Column     func(childComplexity int) int
 		Config     func(childComplexity int) int
 		Enabled    func(childComplexity int) int
 		ID         func(childComplexity int) int
@@ -163,15 +164,19 @@ type ComplexityRoot struct {
 	}
 
 	YoutubeChannel struct {
+		ChannelID   func(childComplexity int) int
 		ChannelName func(childComplexity int) int
+		Handle      func(childComplexity int) int
 		Videos      func(childComplexity int) int
 	}
 
 	YoutubeVideo struct {
-		PublishedAt  func(childComplexity int) int
-		ThumbnailURL func(childComplexity int) int
-		Title        func(childComplexity int) int
-		VideoID      func(childComplexity int) int
+		DurationSeconds func(childComplexity int) int
+		PublishedAt     func(childComplexity int) int
+		ThumbnailURL    func(childComplexity int) int
+		Title           func(childComplexity int) int
+		VideoID         func(childComplexity int) int
+		ViewCount       func(childComplexity int) int
 	}
 }
 
@@ -190,7 +195,7 @@ type QueryResolver interface {
 	TeamSchedule(ctx context.Context, sport string, teamID string) (*widgets.TeamSchedule, error)
 	Standings(ctx context.Context, sport string) ([]*widgets.StandingsConference, error)
 	RedditData(ctx context.Context, subreddits []string) ([]*widgets.SubredditFeed, error)
-	YoutubeData(ctx context.Context, channelIds []string) ([]*model.YoutubeChannel, error)
+	YoutubeData(ctx context.Context, channelIds []string) ([]*widgets.YoutubeChannel, error)
 	DockerData(ctx context.Context) ([]*widgets.DockerContainer, error)
 }
 
@@ -705,6 +710,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.WeatherData.Temperature(childComplexity), true
 
+	case "WidgetConfig.column":
+		if e.ComplexityRoot.WidgetConfig.Column == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WidgetConfig.Column(childComplexity), true
 	case "WidgetConfig.config":
 		if e.ComplexityRoot.WidgetConfig.Config == nil {
 			break
@@ -736,12 +747,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.WidgetConfig.WidgetType(childComplexity), true
 
+	case "YoutubeChannel.channelId":
+		if e.ComplexityRoot.YoutubeChannel.ChannelID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.YoutubeChannel.ChannelID(childComplexity), true
 	case "YoutubeChannel.channelName":
 		if e.ComplexityRoot.YoutubeChannel.ChannelName == nil {
 			break
 		}
 
 		return e.ComplexityRoot.YoutubeChannel.ChannelName(childComplexity), true
+	case "YoutubeChannel.handle":
+		if e.ComplexityRoot.YoutubeChannel.Handle == nil {
+			break
+		}
+
+		return e.ComplexityRoot.YoutubeChannel.Handle(childComplexity), true
 	case "YoutubeChannel.videos":
 		if e.ComplexityRoot.YoutubeChannel.Videos == nil {
 			break
@@ -749,6 +772,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.YoutubeChannel.Videos(childComplexity), true
 
+	case "YoutubeVideo.durationSeconds":
+		if e.ComplexityRoot.YoutubeVideo.DurationSeconds == nil {
+			break
+		}
+
+		return e.ComplexityRoot.YoutubeVideo.DurationSeconds(childComplexity), true
 	case "YoutubeVideo.publishedAt":
 		if e.ComplexityRoot.YoutubeVideo.PublishedAt == nil {
 			break
@@ -773,6 +802,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.YoutubeVideo.VideoID(childComplexity), true
+	case "YoutubeVideo.viewCount":
+		if e.ComplexityRoot.YoutubeVideo.ViewCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.YoutubeVideo.ViewCount(childComplexity), true
 
 	}
 	return 0, false
@@ -1083,6 +1118,8 @@ func (ec *executionContext) childFields_WidgetConfig(ctx context.Context, field 
 		return ec.fieldContext_WidgetConfig_config(ctx, field)
 	case "position":
 		return ec.fieldContext_WidgetConfig_position(ctx, field)
+	case "column":
+		return ec.fieldContext_WidgetConfig_column(ctx, field)
 	case "enabled":
 		return ec.fieldContext_WidgetConfig_enabled(ctx, field)
 	}
@@ -1091,8 +1128,12 @@ func (ec *executionContext) childFields_WidgetConfig(ctx context.Context, field 
 
 func (ec *executionContext) childFields_YoutubeChannel(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
+	case "channelId":
+		return ec.fieldContext_YoutubeChannel_channelId(ctx, field)
 	case "channelName":
 		return ec.fieldContext_YoutubeChannel_channelName(ctx, field)
+	case "handle":
+		return ec.fieldContext_YoutubeChannel_handle(ctx, field)
 	case "videos":
 		return ec.fieldContext_YoutubeChannel_videos(ctx, field)
 	}
@@ -1109,6 +1150,10 @@ func (ec *executionContext) childFields_YoutubeVideo(ctx context.Context, field 
 		return ec.fieldContext_YoutubeVideo_publishedAt(ctx, field)
 	case "thumbnailUrl":
 		return ec.fieldContext_YoutubeVideo_thumbnailUrl(ctx, field)
+	case "durationSeconds":
+		return ec.fieldContext_YoutubeVideo_durationSeconds(ctx, field)
+	case "viewCount":
+		return ec.fieldContext_YoutubeVideo_viewCount(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type YoutubeVideo", field.Name)
 }
@@ -2365,8 +2410,8 @@ func (ec *executionContext) _Query_youtubeData(ctx context.Context, field graphq
 			return ec.Resolvers.Query().YoutubeData(ctx, fc.Args["channelIds"].([]string))
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []*model.YoutubeChannel) graphql.Marshaler {
-			return ec.marshalNYoutubeChannel2ᚕᚖdashboardᚋgraphᚋmodelᚐYoutubeChannelᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v []*widgets.YoutubeChannel) graphql.Marshaler {
+			return ec.marshalNYoutubeChannel2ᚕᚖdashboardᚋwidgetsᚐYoutubeChannelᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3620,6 +3665,29 @@ func (ec *executionContext) fieldContext_WidgetConfig_position(_ context.Context
 	return graphql.NewScalarFieldContext("WidgetConfig", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
+func (ec *executionContext) _WidgetConfig_column(ctx context.Context, field graphql.CollectedField, obj *db.WidgetConfig) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_WidgetConfig_column(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Column, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_WidgetConfig_column(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("WidgetConfig", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
 func (ec *executionContext) _WidgetConfig_enabled(ctx context.Context, field graphql.CollectedField, obj *db.WidgetConfig) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3643,7 +3711,30 @@ func (ec *executionContext) fieldContext_WidgetConfig_enabled(_ context.Context,
 	return graphql.NewScalarFieldContext("WidgetConfig", field, false, false, errors.New("field of type Boolean does not have child fields"))
 }
 
-func (ec *executionContext) _YoutubeChannel_channelName(ctx context.Context, field graphql.CollectedField, obj *model.YoutubeChannel) (ret graphql.Marshaler) {
+func (ec *executionContext) _YoutubeChannel_channelId(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeChannel) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_YoutubeChannel_channelId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ChannelID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_YoutubeChannel_channelId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("YoutubeChannel", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _YoutubeChannel_channelName(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeChannel) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
@@ -3666,7 +3757,30 @@ func (ec *executionContext) fieldContext_YoutubeChannel_channelName(_ context.Co
 	return graphql.NewScalarFieldContext("YoutubeChannel", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _YoutubeChannel_videos(ctx context.Context, field graphql.CollectedField, obj *model.YoutubeChannel) (ret graphql.Marshaler) {
+func (ec *executionContext) _YoutubeChannel_handle(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeChannel) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_YoutubeChannel_handle(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Handle, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_YoutubeChannel_handle(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("YoutubeChannel", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _YoutubeChannel_videos(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeChannel) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
@@ -3678,8 +3792,8 @@ func (ec *executionContext) _YoutubeChannel_videos(ctx context.Context, field gr
 			return obj.Videos, nil
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []*model.YoutubeVideo) graphql.Marshaler {
-			return ec.marshalNYoutubeVideo2ᚕᚖdashboardᚋgraphᚋmodelᚐYoutubeVideoᚄ(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v []*widgets.YoutubeVideo) graphql.Marshaler {
+			return ec.marshalNYoutubeVideo2ᚕᚖdashboardᚋwidgetsᚐYoutubeVideoᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -3698,7 +3812,7 @@ func (ec *executionContext) fieldContext_YoutubeChannel_videos(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _YoutubeVideo_title(ctx context.Context, field graphql.CollectedField, obj *model.YoutubeVideo) (ret graphql.Marshaler) {
+func (ec *executionContext) _YoutubeVideo_title(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeVideo) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
@@ -3721,7 +3835,7 @@ func (ec *executionContext) fieldContext_YoutubeVideo_title(_ context.Context, f
 	return graphql.NewScalarFieldContext("YoutubeVideo", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _YoutubeVideo_videoId(ctx context.Context, field graphql.CollectedField, obj *model.YoutubeVideo) (ret graphql.Marshaler) {
+func (ec *executionContext) _YoutubeVideo_videoId(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeVideo) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
@@ -3744,7 +3858,7 @@ func (ec *executionContext) fieldContext_YoutubeVideo_videoId(_ context.Context,
 	return graphql.NewScalarFieldContext("YoutubeVideo", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _YoutubeVideo_publishedAt(ctx context.Context, field graphql.CollectedField, obj *model.YoutubeVideo) (ret graphql.Marshaler) {
+func (ec *executionContext) _YoutubeVideo_publishedAt(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeVideo) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
@@ -3767,7 +3881,7 @@ func (ec *executionContext) fieldContext_YoutubeVideo_publishedAt(_ context.Cont
 	return graphql.NewScalarFieldContext("YoutubeVideo", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
-func (ec *executionContext) _YoutubeVideo_thumbnailUrl(ctx context.Context, field graphql.CollectedField, obj *model.YoutubeVideo) (ret graphql.Marshaler) {
+func (ec *executionContext) _YoutubeVideo_thumbnailUrl(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeVideo) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
@@ -3788,6 +3902,52 @@ func (ec *executionContext) _YoutubeVideo_thumbnailUrl(ctx context.Context, fiel
 }
 func (ec *executionContext) fieldContext_YoutubeVideo_thumbnailUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("YoutubeVideo", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _YoutubeVideo_durationSeconds(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeVideo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_YoutubeVideo_durationSeconds(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DurationSeconds, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_YoutubeVideo_durationSeconds(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("YoutubeVideo", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _YoutubeVideo_viewCount(ctx context.Context, field graphql.CollectedField, obj *widgets.YoutubeVideo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_YoutubeVideo_viewCount(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ViewCount, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *float64) graphql.Marshaler {
+			return ec.marshalOFloat2ᚖfloat64(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_YoutubeVideo_viewCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("YoutubeVideo", field, false, false, errors.New("field of type Float does not have child fields"))
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -5886,6 +6046,11 @@ func (ec *executionContext) _WidgetConfig(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "column":
+			out.Values[i] = ec._WidgetConfig_column(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "enabled":
 			out.Values[i] = ec._WidgetConfig_enabled(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -5914,7 +6079,7 @@ func (ec *executionContext) _WidgetConfig(ctx context.Context, sel ast.Selection
 
 var youtubeChannelImplementors = []string{"YoutubeChannel"}
 
-func (ec *executionContext) _YoutubeChannel(ctx context.Context, sel ast.SelectionSet, obj *model.YoutubeChannel) graphql.Marshaler {
+func (ec *executionContext) _YoutubeChannel(ctx context.Context, sel ast.SelectionSet, obj *widgets.YoutubeChannel) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, youtubeChannelImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -5924,9 +6089,19 @@ func (ec *executionContext) _YoutubeChannel(ctx context.Context, sel ast.Selecti
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("YoutubeChannel")
+		case "channelId":
+			out.Values[i] = ec._YoutubeChannel_channelId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "channelName":
 			out.Values[i] = ec._YoutubeChannel_channelName(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "handle":
+			out.Values[i] = ec._YoutubeChannel_handle(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
 		case "videos":
@@ -5957,7 +6132,7 @@ func (ec *executionContext) _YoutubeChannel(ctx context.Context, sel ast.Selecti
 
 var youtubeVideoImplementors = []string{"YoutubeVideo"}
 
-func (ec *executionContext) _YoutubeVideo(ctx context.Context, sel ast.SelectionSet, obj *model.YoutubeVideo) graphql.Marshaler {
+func (ec *executionContext) _YoutubeVideo(ctx context.Context, sel ast.SelectionSet, obj *widgets.YoutubeVideo) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, youtubeVideoImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -5985,6 +6160,16 @@ func (ec *executionContext) _YoutubeVideo(ctx context.Context, sel ast.Selection
 		case "thumbnailUrl":
 			out.Values[i] = ec._YoutubeVideo_thumbnailUrl(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "durationSeconds":
+			out.Values[i] = ec._YoutubeVideo_durationSeconds(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "viewCount":
+			out.Values[i] = ec._YoutubeVideo_viewCount(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
 		default:
@@ -6753,11 +6938,11 @@ func (ec *executionContext) marshalNWidgetConfig2ᚖdashboardᚋdbᚐWidgetConfi
 	return ec._WidgetConfig(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNYoutubeChannel2ᚕᚖdashboardᚋgraphᚋmodelᚐYoutubeChannelᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.YoutubeChannel) graphql.Marshaler {
+func (ec *executionContext) marshalNYoutubeChannel2ᚕᚖdashboardᚋwidgetsᚐYoutubeChannelᚄ(ctx context.Context, sel ast.SelectionSet, v []*widgets.YoutubeChannel) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNYoutubeChannel2ᚖdashboardᚋgraphᚋmodelᚐYoutubeChannel(ctx, sel, v[i])
+		return ec.marshalNYoutubeChannel2ᚖdashboardᚋwidgetsᚐYoutubeChannel(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -6769,7 +6954,7 @@ func (ec *executionContext) marshalNYoutubeChannel2ᚕᚖdashboardᚋgraphᚋmod
 	return ret
 }
 
-func (ec *executionContext) marshalNYoutubeChannel2ᚖdashboardᚋgraphᚋmodelᚐYoutubeChannel(ctx context.Context, sel ast.SelectionSet, v *model.YoutubeChannel) graphql.Marshaler {
+func (ec *executionContext) marshalNYoutubeChannel2ᚖdashboardᚋwidgetsᚐYoutubeChannel(ctx context.Context, sel ast.SelectionSet, v *widgets.YoutubeChannel) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -6779,11 +6964,11 @@ func (ec *executionContext) marshalNYoutubeChannel2ᚖdashboardᚋgraphᚋmodel�
 	return ec._YoutubeChannel(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNYoutubeVideo2ᚕᚖdashboardᚋgraphᚋmodelᚐYoutubeVideoᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.YoutubeVideo) graphql.Marshaler {
+func (ec *executionContext) marshalNYoutubeVideo2ᚕᚖdashboardᚋwidgetsᚐYoutubeVideoᚄ(ctx context.Context, sel ast.SelectionSet, v []*widgets.YoutubeVideo) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalNYoutubeVideo2ᚖdashboardᚋgraphᚋmodelᚐYoutubeVideo(ctx, sel, v[i])
+		return ec.marshalNYoutubeVideo2ᚖdashboardᚋwidgetsᚐYoutubeVideo(ctx, sel, v[i])
 	})
 
 	for _, e := range ret {
@@ -6795,7 +6980,7 @@ func (ec *executionContext) marshalNYoutubeVideo2ᚕᚖdashboardᚋgraphᚋmodel
 	return ret
 }
 
-func (ec *executionContext) marshalNYoutubeVideo2ᚖdashboardᚋgraphᚋmodelᚐYoutubeVideo(ctx context.Context, sel ast.SelectionSet, v *model.YoutubeVideo) graphql.Marshaler {
+func (ec *executionContext) marshalNYoutubeVideo2ᚖdashboardᚋwidgetsᚐYoutubeVideo(ctx context.Context, sel ast.SelectionSet, v *widgets.YoutubeVideo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
@@ -6973,6 +7158,23 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	res := graphql.MarshalFloatContext(*v)
+	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) marshalOGame2ᚖdashboardᚋwidgetsᚐGame(ctx context.Context, sel ast.SelectionSet, v *widgets.Game) graphql.Marshaler {

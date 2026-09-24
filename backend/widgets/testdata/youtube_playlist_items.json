@@ -1,0 +1,120 @@
+{
+ "items": [
+  {
+   "snippet": {
+    "publishedAt": "2026-09-22T17:49:42Z",
+    "channelId": "UCBJycsmduvYEL83R_U4JriQ",
+    "title": "The Apple Watch Has a Problem",
+    "channelTitle": "Marques Brownlee",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/pOX1l1edBME/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/pOX1l1edBME/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/pOX1l1edBME/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    }
+   },
+   "contentDetails": {
+    "videoId": "pOX1l1edBME",
+    "videoPublishedAt": "2026-09-22T17:49:42Z"
+   }
+  },
+  {
+   "snippet": {
+    "publishedAt": "2026-09-16T12:01:27Z",
+    "channelId": "UCBJycsmduvYEL83R_U4JriQ",
+    "title": "iPhone 18 Pro Review: All About that Chip",
+    "channelTitle": "Marques Brownlee",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/ohqxP8EEumo/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/ohqxP8EEumo/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/ohqxP8EEumo/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    }
+   },
+   "contentDetails": {
+    "videoId": "ohqxP8EEumo",
+    "videoPublishedAt": "2026-09-16T12:01:27Z"
+   }
+  },
+  {
+   "snippet": {
+    "publishedAt": "2026-09-12T21:36:57Z",
+    "channelId": "UCBJycsmduvYEL83R_U4JriQ",
+    "title": "iPhone Duo: What We Missed!",
+    "channelTitle": "Marques Brownlee",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/6D__H_DO2Xk/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/6D__H_DO2Xk/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/6D__H_DO2Xk/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    }
+   },
+   "contentDetails": {
+    "videoId": "6D__H_DO2Xk",
+    "videoPublishedAt": "2026-09-12T21:36:57Z"
+   }
+  },
+  {
+   "snippet": {
+    "publishedAt": "2026-09-10T07:29:55Z",
+    "channelId": "UCBJycsmduvYEL83R_U4JriQ",
+    "title": "iPhone 18 Pro/Duo Impressions: Mogged",
+    "channelTitle": "Marques Brownlee",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/Od6M0AXpcxQ/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/Od6M0AXpcxQ/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/Od6M0AXpcxQ/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    }
+   },
+   "contentDetails": {
+    "videoId": "Od6M0AXpcxQ",
+    "videoPublishedAt": "2026-09-10T07:29:55Z"
+   }
+  }
+ ]
+}

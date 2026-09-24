@@ -158,3 +158,39 @@ func refreshSports(repo *db.WidgetRepo, store cache.Store, client *widgets.Sport
 		}
 	}
 }
+
+// refreshYouTube re-fetches every channel used by an enabled youtube widget.
+func refreshYouTube(repo *db.WidgetRepo, store cache.Store, client *widgets.YouTubeClient) func(context.Context) {
+	return func(ctx context.Context) {
+		if client.APIKey == "" {
+			return
+		}
+		configs, err := repo.ListEnabledByType(ctx, widgets.YouTubeWidgetType)
+		if err != nil {
+			log.Printf("refresh youtube: list widgets: %v", err)
+			return
+		}
+		seen := map[string]bool{}
+		for _, w := range configs {
+			refs, err := widgets.ParseYouTubeConfig(w.Config)
+			if err != nil {
+				log.Printf("refresh youtube: widget %d: %v", w.ID, err)
+				continue
+			}
+			for _, ref := range refs {
+				if seen[ref] {
+					continue
+				}
+				seen[ref] = true
+				channel, err := client.Fetch(ctx, ref)
+				if err != nil {
+					log.Printf("refresh youtube: %v", err)
+					continue
+				}
+				if err := cache.Put(ctx, store, widgets.YouTubeWidgetType, widgets.YouTubeCacheKey(ref), widgets.YouTubeTTL, channel); err != nil {
+					log.Printf("refresh youtube: %s: cache: %v", ref, err)
+				}
+			}
+		}
+	}
+}

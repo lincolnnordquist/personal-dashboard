@@ -3,17 +3,20 @@ export interface Tab<T extends string> {
   label: string
 }
 
+// "pill" tabs sit inside a card; "label" tabs replace a widget's section label, Glance-style.
 export default function Tabs<T extends string>({
   tabs,
   active,
   onChange,
+  variant = 'pill',
 }: {
   tabs: Tab<T>[]
   active: T
   onChange: (id: T) => void
+  variant?: 'pill' | 'label'
 }) {
   return (
-    <div className="tabs" role="tablist">
+    <div className={`tabs tabs-${variant}`} role="tablist">
       {tabs.map((t) => (
         <button
           key={t.id}

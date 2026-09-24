@@ -25,18 +25,22 @@ export default function RedditWidget({ config }: WidgetProps) {
   const feed = feeds.find((f) => f.subreddit === active) ?? feeds[0]
 
   return (
-    <WidgetCard title="Reddit">
+    <WidgetCard
+      header={
+        feeds.length > 1 && feed ? (
+          <Tabs
+            tabs={feeds.map((f) => ({ id: f.subreddit, label: `r/${f.subreddit}` }))}
+            active={feed.subreddit}
+            onChange={setActive}
+            variant="label"
+          />
+        ) : undefined
+      }
+      title={feed ? `r/${feed.subreddit}` : 'Reddit'}
+    >
       {subreddits.length === 0 && <p className="muted">No subreddits configured.</p>}
       {loading && feeds.length === 0 && <p className="muted">Loading…</p>}
       {error && <p className="error">{error.message}</p>}
-
-      {feeds.length > 1 && feed && (
-        <Tabs
-          tabs={feeds.map((f) => ({ id: f.subreddit, label: `r/${f.subreddit}` }))}
-          active={feed.subreddit}
-          onChange={setActive}
-        />
-      )}
 
       {feed && (
         <ul className="post-list tab-panel">

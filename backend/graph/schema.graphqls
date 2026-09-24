@@ -17,6 +17,7 @@ type Query {
   standings(sport: String!): [StandingsConference!]!
   "Subreddits that fail to load are left out of the result and reported in errors."
   redditData(subreddits: [String!]!): [SubredditFeed!]!
+  "Latest uploads per channel, without Shorts. channelIds takes @handles or channel IDs (UC…). Channels that fail to load are left out and reported in errors."
   youtubeData(channelIds: [String!]!): [YoutubeChannel!]!
   "Every container on the host, running containers first. Always live, never cached."
   dockerData: [DockerContainer!]!
@@ -31,7 +32,10 @@ type WidgetConfig {
   id: Int!
   widgetType: String!
   config: JSON!
+  "Order within the widget's column."
   position: Int!
+  "left, center, or right."
+  column: String!
   enabled: Boolean!
 }
 
@@ -147,15 +151,23 @@ type RedditPost {
 }
 
 type YoutubeChannel {
+  channelId: String!
   channelName: String!
+  handle: String
+  "Newest first."
   videos: [YoutubeVideo!]!
 }
 
 type YoutubeVideo {
   title: String!
   videoId: String!
+  "RFC 3339 timestamp."
   publishedAt: String!
+  "320x180 thumbnail; may be empty."
   thumbnailUrl: String!
+  durationSeconds: Int!
+  "A Float because view counts can exceed GraphQL's 32-bit Int. Null when the channel hides them."
+  viewCount: Float
 }
 
 type DockerContainer {

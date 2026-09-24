@@ -5,6 +5,7 @@ export interface WidgetConfig {
   widgetType: string
   config: Record<string, unknown>
   position: number
+  column: 'left' | 'center' | 'right'
   enabled: boolean
 }
 
@@ -15,6 +16,7 @@ export const GET_WIDGETS: TypedDocumentNode<{ widgets: WidgetConfig[] }> = gql`
       widgetType
       config
       position
+      column
       enabled
     }
   }
@@ -261,6 +263,40 @@ export const GET_DOCKER: TypedDocumentNode<{ dockerData: DockerContainer[] }> = 
       statusText
       project
       service
+    }
+  }
+`
+
+export interface YoutubeVideo {
+  title: string
+  videoId: string
+  publishedAt: string
+  thumbnailUrl: string
+  durationSeconds: number
+  viewCount: number | null
+}
+
+export interface YoutubeChannel {
+  channelId: string
+  channelName: string
+  handle: string | null
+  videos: YoutubeVideo[]
+}
+
+export const GET_YOUTUBE: TypedDocumentNode<{ youtubeData: YoutubeChannel[] }, { channelIds: string[] }> = gql`
+  query GetYoutube($channelIds: [String!]!) {
+    youtubeData(channelIds: $channelIds) {
+      channelId
+      channelName
+      handle
+      videos {
+        title
+        videoId
+        publishedAt
+        thumbnailUrl
+        durationSeconds
+        viewCount
+      }
     }
   }
 `

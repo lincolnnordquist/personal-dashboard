@@ -15,7 +15,8 @@ type WidgetConfig struct {
 	ID         int
 	WidgetType string
 	Config     map[string]any
-	Position   int
+	Position   int    // order within the column
+	Column     string // "left", "center", or "right"
 	Enabled    bool
 }
 
@@ -29,11 +30,11 @@ func NewWidgetRepo(pool *pgxpool.Pool) *WidgetRepo {
 	return &WidgetRepo{pool: pool}
 }
 
-const widgetColumns = `id, widget_type, config, position, enabled`
+const widgetColumns = `id, widget_type, config, position, layout_column, enabled`
 
-// List returns all widgets ordered by grid position.
+// List returns all widgets, grouped by column and ordered within each.
 func (r *WidgetRepo) List(ctx context.Context) ([]*WidgetConfig, error) {
-	rows, err := r.pool.Query(ctx, `SELECT `+widgetColumns+` FROM widget_config ORDER BY position, id`)
+	rows, err := r.pool.Query(ctx, `SELECT `+widgetColumns+` FROM widget_config ORDER BY layout_column, position, id`)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +87,7 @@ func (r *WidgetRepo) one(ctx context.Context, sql string, args ...any) (*WidgetC
 func scanWidget(row pgx.CollectableRow) (*WidgetConfig, error) {
 	var w WidgetConfig
 	var enabled *bool
-	if err := row.Scan(&w.ID, &w.WidgetType, &w.Config, &w.Position, &enabled); err != nil {
+	if err := row.Scan(&w.ID, &w.WidgetType, &w.Config, &w.Position, &w.Column, &enabled); err != nil {
 		return nil, err
 	}
 	// The enabled column is nullable in the spec's schema; treat NULL as enabled.

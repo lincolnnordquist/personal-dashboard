@@ -45,3 +45,32 @@ export function kickoff(iso: string, timeValid: boolean): string {
   if (!timeValid) return `${placeholderDayFormat.format(date)} · TBD`
   return `${dayFormat.format(date)} · ${timeFormat.format(date)}`
 }
+
+// YYYY-MM-DD keys for grouping things by calendar day. en-CA formats dates as YYYY-MM-DD.
+const dayKeyFormat = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' })
+const easternDayKeyFormat = new Intl.DateTimeFormat('en-CA', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  timeZone: 'America/New_York',
+})
+
+// dayKey returns the viewer's local calendar day for a date.
+export function dayKey(date: Date): string {
+  return dayKeyFormat.format(date)
+}
+
+// gameDayKey returns the local calendar day a game is played on. Games without a kickoff
+// time use a midnight US Eastern placeholder, so their day is read in that time zone.
+export function gameDayKey(iso: string, timeValid: boolean): string {
+  const date = new Date(iso)
+  return timeValid ? dayKeyFormat.format(date) : easternDayKeyFormat.format(date)
+}
+
+// videoLength formats seconds as a video length, e.g. "15:06" or "1:02:03".
+export function videoLength(seconds: number): string {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = String(seconds % 60).padStart(2, '0')
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`
+}

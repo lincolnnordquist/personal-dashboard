@@ -44,6 +44,10 @@ func main() {
 	weather := widgets.NewWeatherClient()
 	reddit := widgets.NewRedditClient(cfg.RedditClientID, cfg.RedditClientSecret)
 	sports := widgets.NewSportsClient()
+	youtube := widgets.NewYouTubeClient(cfg.YouTubeAPIKey)
+	if cfg.YouTubeAPIKey == "" {
+		log.Printf("youtube: YOUTUBE_API_KEY not set; the YouTube widget will show an error")
+	}
 	docker, err := widgets.NewDockerClient()
 	if err != nil {
 		log.Printf("docker: %v (the Docker widget will show an error)", err)
@@ -55,6 +59,7 @@ func main() {
 	go every(ctx, widgets.WeatherTTL, refreshWeather(repo, store, weather))
 	go every(ctx, widgets.RedditTTL, refreshReddit(repo, store, reddit))
 	go every(ctx, widgets.SportsTTL, refreshSports(repo, store, sports))
+	go every(ctx, widgets.YouTubeTTL, refreshYouTube(repo, store, youtube))
 
 	resolver := &graph.Resolver{
 		WidgetRepo: repo,
@@ -62,6 +67,7 @@ func main() {
 		Weather:    weather,
 		Reddit:     reddit,
 		Sports:     sports,
+		YouTube:    youtube,
 		Docker:     docker,
 		Now:        time.Now,
 	}

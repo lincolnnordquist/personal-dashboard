@@ -36,8 +36,7 @@ export default function SportsWidget({ config }: WidgetProps) {
   ]
 
   return (
-    <WidgetCard title={sport.toUpperCase()}>
-      <Tabs tabs={tabs} active={active} onChange={setActive} />
+    <WidgetCard header={<Tabs tabs={tabs} active={active} onChange={setActive} variant="label" />}>
       <div className="tab-panel">
         {active === 'team' &&
           (schedule.error ? (

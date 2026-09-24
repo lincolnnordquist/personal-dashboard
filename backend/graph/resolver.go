@@ -16,6 +16,7 @@ type Resolver struct {
 	Weather    *widgets.WeatherClient
 	Reddit     *widgets.RedditClient
 	Sports     *widgets.SportsClient
+	YouTube    *widgets.YouTubeClient
 	Docker     *widgets.DockerClient // nil when the Docker client could not be created
 	Now        func() time.Time
 }
@@ -53,5 +54,12 @@ func (r *Resolver) fetchStandings(ctx context.Context, sport string) ([]*widgets
 	return cache.GetOrFetch(ctx, r.Cache, widgets.SportsWidgetType, widgets.StandingsCacheKey(sport), widgets.SportsTTL, r.Now,
 		func(ctx context.Context) ([]*widgets.StandingsConference, error) {
 			return r.Sports.FetchStandings(ctx, sport)
+		})
+}
+
+func (r *Resolver) fetchYouTubeChannel(ctx context.Context, ref string) (*widgets.YoutubeChannel, error) {
+	return cache.GetOrFetch(ctx, r.Cache, widgets.YouTubeWidgetType, widgets.YouTubeCacheKey(ref), widgets.YouTubeTTL, r.Now,
+		func(ctx context.Context) (*widgets.YoutubeChannel, error) {
+			return r.YouTube.Fetch(ctx, ref)
 		})
 }

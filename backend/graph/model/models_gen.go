@@ -15,18 +15,6 @@ type Mutation struct {
 type Query struct {
 }
 
-type YoutubeChannel struct {
-	ChannelName string          `json:"channelName"`
-	Videos      []*YoutubeVideo `json:"videos"`
-}
-
-type YoutubeVideo struct {
-	Title        string `json:"title"`
-	VideoID      string `json:"videoId"`
-	PublishedAt  string `json:"publishedAt"`
-	ThumbnailURL string `json:"thumbnailUrl"`
-}
-
 type TemperatureUnit string
 
 const (
