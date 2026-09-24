@@ -18,6 +18,13 @@ export function timeAgo(iso: string): string {
   return 'just now'
 }
 
+// greeting returns a time-of-day salutation for the given name, e.g. "Good afternoon, Lincoln".
+export function greeting(name: string): string {
+  const hour = new Date().getHours()
+  const part = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'
+  return `Good ${part}, ${name}`
+}
+
 export function compactNumber(n: number): string {
   return Intl.NumberFormat(undefined, { notation: 'compact' }).format(n)
 }
