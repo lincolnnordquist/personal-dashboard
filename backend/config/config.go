@@ -10,8 +10,9 @@ import (
 type Config struct {
 	DatabaseURL         string
 	Port                string
-	AllowedOrigin       string
 	YouTubeAPIKey       string
+	RedditClientID      string
+	RedditClientSecret  string
 	DefaultLat          float64
 	DefaultLon          float64
 	DefaultLocationName string
@@ -22,8 +23,9 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		DatabaseURL:         os.Getenv("DATABASE_URL"),
 		Port:                getEnv("PORT", "8080"),
-		AllowedOrigin:       getEnv("ALLOWED_ORIGIN", "http://localhost:3000"),
 		YouTubeAPIKey:       os.Getenv("YOUTUBE_API_KEY"),
+		RedditClientID:      os.Getenv("REDDIT_CLIENT_ID"),
+		RedditClientSecret:  os.Getenv("REDDIT_CLIENT_SECRET"),
 		DefaultLocationName: getEnv("DEFAULT_LOCATION_NAME", "St. George, UT"),
 	}
 	if cfg.DatabaseURL == "" {

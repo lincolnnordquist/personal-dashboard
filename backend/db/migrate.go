@@ -94,7 +94,7 @@ func defaultWidgets(cfg *config.Config) []seedWidget {
 			"location": cfg.DefaultLocationName,
 			"unit":     "F",
 		}},
-		{"sports", map[string]any{"sports": []string{"nfl", "nba"}, "favoriteTeams": []string{}}},
+		{"sports", map[string]any{"sport": "nfl", "featuredTeam": "sea", "favoriteTeams": []string{}}},
 		{"reddit", map[string]any{"subreddits": []string{"golang", "selfhosted"}}},
 		{"youtube", map[string]any{"channelIds": []string{}}},
 		{"docker", map[string]any{}},

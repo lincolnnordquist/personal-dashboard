@@ -12,6 +12,10 @@ import (
 	"dashboard/widgets"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 // UpdateWidgetConfig is the resolver for the updateWidgetConfig field.
@@ -54,13 +58,61 @@ func (r *queryResolver) WeatherData(ctx context.Context, lat float64, lon float6
 }
 
 // SportsData is the resolver for the sportsData field.
-func (r *queryResolver) SportsData(ctx context.Context, sport string, teamIds []string) (*model.SportsData, error) {
-	return nil, errors.New("SportsData: not implemented yet")
+func (r *queryResolver) SportsData(ctx context.Context, sport string, teamIds []string) (*widgets.SportsData, error) {
+	sport = strings.ToLower(sport)
+	data, err := r.fetchScoreboard(ctx, sport)
+	if err != nil || len(teamIds) == 0 {
+		return data, err
+	}
+	hasAny := func(g *widgets.Game) bool {
+		return slices.ContainsFunc(teamIds, g.HasTeam)
+	}
+	filtered := &widgets.SportsData{Week: data.Week, RecentGames: []*widgets.Game{}, UpcomingGames: []*widgets.Game{}}
+	for _, g := range data.RecentGames {
+		if hasAny(g) {
+			filtered.RecentGames = append(filtered.RecentGames, g)
+		}
+	}
+	for _, g := range data.UpcomingGames {
+		if hasAny(g) {
+			filtered.UpcomingGames = append(filtered.UpcomingGames, g)
+		}
+	}
+	return filtered, nil
+}
+
+// TeamSchedule is the resolver for the teamSchedule field.
+func (r *queryResolver) TeamSchedule(ctx context.Context, sport string, teamID string) (*widgets.TeamSchedule, error) {
+	id, err := widgets.NormalizeTeamID(teamID)
+	if err != nil {
+		return nil, err
+	}
+	return r.fetchTeamSchedule(ctx, strings.ToLower(sport), id)
+}
+
+// Standings is the resolver for the standings field.
+func (r *queryResolver) Standings(ctx context.Context, sport string) ([]*widgets.StandingsConference, error) {
+	return r.fetchStandings(ctx, strings.ToLower(sport))
 }
 
 // RedditData is the resolver for the redditData field.
-func (r *queryResolver) RedditData(ctx context.Context, subreddits []string) ([]*model.SubredditFeed, error) {
-	return nil, errors.New("RedditData: not implemented yet")
+func (r *queryResolver) RedditData(ctx context.Context, subreddits []string) ([]*widgets.SubredditFeed, error) {
+	// Fetched one at a time: Reddit rate-limits bursts of anonymous requests.
+	feeds := make([]*widgets.SubredditFeed, 0, len(subreddits))
+	for _, s := range subreddits {
+		name, err := widgets.NormalizeSubreddit(s)
+		if err != nil {
+			graphql.AddError(ctx, err)
+			continue
+		}
+		feed, err := r.fetchSubreddit(ctx, name)
+		if err != nil {
+			graphql.AddError(ctx, err)
+			continue
+		}
+		feeds = append(feeds, feed)
+	}
+	return feeds, nil
 }
 
 // YoutubeData is the resolver for the youtubeData field.
@@ -69,8 +121,11 @@ func (r *queryResolver) YoutubeData(ctx context.Context, channelIds []string) ([
 }
 
 // DockerData is the resolver for the dockerData field.
-func (r *queryResolver) DockerData(ctx context.Context) ([]*model.DockerContainer, error) {
-	return nil, errors.New("DockerData: not implemented yet")
+func (r *queryResolver) DockerData(ctx context.Context) ([]*widgets.DockerContainer, error) {
+	if r.Docker == nil {
+		return nil, errors.New("docker: client not available")
+	}
+	return r.Docker.Containers(ctx)
 }
 
 // Mutation returns MutationResolver implementation.

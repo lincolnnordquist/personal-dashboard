@@ -1,0 +1,628 @@
+{
+ "team": {
+  "id": "26",
+  "abbreviation": "SEA",
+  "location": "Seattle",
+  "name": "Seahawks",
+  "displayName": "Seattle Seahawks",
+  "clubhouse": "https://www.espn.com/nfl/team/_/name/sea/seattle-seahawks",
+  "color": "002a5c",
+  "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+  "recordSummary": "2-0",
+  "seasonSummary": "2026",
+  "standingSummary": "1st in NFC West",
+  "groups": {
+   "id": "3",
+   "parent": {
+    "id": "7"
+   },
+   "isConference": false
+  }
+ },
+ "byeWeek": 11,
+ "season": {
+  "year": 2026,
+  "type": 2,
+  "name": "Regular Season",
+  "displayName": "2026",
+  "half": 1
+ },
+ "events": [
+  {
+   "id": "401872656",
+   "date": "2026-09-10T00:20Z",
+   "name": "New England Patriots at Seattle Seahawks",
+   "shortName": "NE @ SEA",
+   "week": {
+    "number": 1,
+    "text": "Week 1"
+   },
+   "competitions": [
+    {
+     "id": "401872656",
+     "date": "2026-09-10T00:20Z",
+     "timeValid": true,
+     "status": {
+      "type": {
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "type": {
+        "id": "1",
+        "shortName": "TV"
+       },
+       "market": {
+        "id": "1",
+        "type": "National"
+       },
+       "media": {
+        "shortName": "NBC"
+       },
+       "lang": "en",
+       "region": "us",
+       "partnered": false
+      }
+     ],
+     "competitors": [
+      {
+       "id": "26",
+       "homeAway": "home",
+       "winner": true,
+       "score": {
+        "value": 13.0,
+        "displayValue": "13"
+       },
+       "record": [
+        {
+         "id": "369",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "1-0"
+        },
+        {
+         "id": "13",
+         "displayName": "Home",
+         "shortDisplayName": "HOME",
+         "description": "Home Record",
+         "type": "home",
+         "displayValue": "1-0"
+        },
+        {
+         "id": "14",
+         "displayName": "Road",
+         "shortDisplayName": "AWAY",
+         "description": "Away Record",
+         "type": "road",
+         "displayValue": "0-0"
+        }
+       ],
+       "team": {
+        "id": "26",
+        "abbreviation": "SEA",
+        "displayName": "Seattle Seahawks",
+        "shortDisplayName": "Seahawks",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/sea.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "id": "17",
+       "homeAway": "away",
+       "winner": false,
+       "score": {
+        "value": 10.0,
+        "displayValue": "10"
+       },
+       "record": [
+        {
+         "id": "369",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "0-1"
+        },
+        {
+         "id": "13",
+         "displayName": "Home",
+         "shortDisplayName": "HOME",
+         "description": "Home Record",
+         "type": "home",
+         "displayValue": "0-0"
+        },
+        {
+         "id": "14",
+         "displayName": "Road",
+         "shortDisplayName": "AWAY",
+         "description": "Away Record",
+         "type": "road",
+         "displayValue": "0-1"
+        }
+       ],
+       "team": {
+        "id": "17",
+        "abbreviation": "NE",
+        "displayName": "New England Patriots",
+        "shortDisplayName": "Patriots",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/ne.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872943",
+   "date": "2026-09-20T20:25Z",
+   "name": "Seattle Seahawks at Arizona Cardinals",
+   "shortName": "SEA @ ARI",
+   "week": {
+    "number": 2,
+    "text": "Week 2"
+   },
+   "competitions": [
+    {
+     "id": "401872943",
+     "date": "2026-09-20T20:25Z",
+     "timeValid": true,
+     "status": {
+      "type": {
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "type": {
+        "id": "1",
+        "shortName": "TV"
+       },
+       "market": {
+        "id": "1",
+        "type": "National"
+       },
+       "media": {
+        "shortName": "FOX"
+       },
+       "lang": "en",
+       "region": "us",
+       "partnered": false
+      }
+     ],
+     "competitors": [
+      {
+       "id": "22",
+       "homeAway": "home",
+       "winner": false,
+       "score": {
+        "value": 7.0,
+        "displayValue": "7"
+       },
+       "record": [
+        {
+         "id": "369",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "1-1"
+        },
+        {
+         "id": "13",
+         "displayName": "Home",
+         "shortDisplayName": "HOME",
+         "description": "Home Record",
+         "type": "home",
+         "displayValue": "0-1"
+        },
+        {
+         "id": "14",
+         "displayName": "Road",
+         "shortDisplayName": "AWAY",
+         "description": "Away Record",
+         "type": "road",
+         "displayValue": "1-0"
+        }
+       ],
+       "team": {
+        "id": "22",
+        "abbreviation": "ARI",
+        "displayName": "Arizona Cardinals",
+        "shortDisplayName": "Cardinals",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/ari.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/ari.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "id": "26",
+       "homeAway": "away",
+       "winner": true,
+       "score": {
+        "value": 31.0,
+        "displayValue": "31"
+       },
+       "record": [
+        {
+         "id": "369",
+         "abbreviation": "Game",
+         "displayName": "Record Year To Date",
+         "shortDisplayName": "YTD",
+         "description": "Overall Record",
+         "type": "total",
+         "displayValue": "2-0"
+        },
+        {
+         "id": "13",
+         "displayName": "Home",
+         "shortDisplayName": "HOME",
+         "description": "Home Record",
+         "type": "home",
+         "displayValue": "1-0"
+        },
+        {
+         "id": "14",
+         "displayName": "Road",
+         "shortDisplayName": "AWAY",
+         "description": "Away Record",
+         "type": "road",
+         "displayValue": "1-0"
+        }
+       ],
+       "team": {
+        "id": "26",
+        "abbreviation": "SEA",
+        "displayName": "Seattle Seahawks",
+        "shortDisplayName": "Seahawks",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/sea.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872955",
+   "date": "2026-09-27T17:00Z",
+   "name": "Seattle Seahawks at Washington Commanders",
+   "shortName": "SEA @ WSH",
+   "week": {
+    "number": 3,
+    "text": "Week 3"
+   },
+   "competitions": [
+    {
+     "id": "401872955",
+     "date": "2026-09-27T17:00Z",
+     "timeValid": true,
+     "status": {
+      "type": {
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "shortDetail": "9/27 - 1:00 PM EDT"
+      }
+     },
+     "broadcasts": [
+      {
+       "type": {
+        "id": "1",
+        "shortName": "TV"
+       },
+       "market": {
+        "id": "1",
+        "type": "National"
+       },
+       "media": {
+        "shortName": "FOX"
+       },
+       "lang": "en",
+       "region": "us",
+       "partnered": false
+      }
+     ],
+     "competitors": [
+      {
+       "id": "28",
+       "homeAway": "home",
+       "team": {
+        "id": "28",
+        "abbreviation": "WSH",
+        "displayName": "Washington Commanders",
+        "shortDisplayName": "Commanders",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/wsh.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "id": "26",
+       "homeAway": "away",
+       "team": {
+        "id": "26",
+        "abbreviation": "SEA",
+        "displayName": "Seattle Seahawks",
+        "shortDisplayName": "Seahawks",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/sea.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872977",
+   "date": "2026-10-04T20:25Z",
+   "name": "Los Angeles Chargers at Seattle Seahawks",
+   "shortName": "LAC @ SEA",
+   "week": {
+    "number": 4,
+    "text": "Week 4"
+   },
+   "competitions": [
+    {
+     "id": "401872977",
+     "date": "2026-10-04T20:25Z",
+     "timeValid": true,
+     "status": {
+      "type": {
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "shortDetail": "10/4 - 4:25 PM EDT"
+      }
+     },
+     "broadcasts": [
+      {
+       "type": {
+        "id": "1",
+        "shortName": "TV"
+       },
+       "market": {
+        "id": "1",
+        "type": "National"
+       },
+       "media": {
+        "shortName": "CBS"
+       },
+       "lang": "en",
+       "region": "us",
+       "partnered": false
+      }
+     ],
+     "competitors": [
+      {
+       "id": "26",
+       "homeAway": "home",
+       "team": {
+        "id": "26",
+        "abbreviation": "SEA",
+        "displayName": "Seattle Seahawks",
+        "shortDisplayName": "Seahawks",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/sea.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "id": "24",
+       "homeAway": "away",
+       "team": {
+        "id": "24",
+        "abbreviation": "LAC",
+        "displayName": "Los Angeles Chargers",
+        "shortDisplayName": "Chargers",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/lac.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401873185",
+   "date": "2027-01-10T05:00Z",
+   "name": "Seattle Seahawks at Los Angeles Rams",
+   "shortName": "SEA @ LAR",
+   "week": {
+    "number": 18,
+    "text": "Week 18"
+   },
+   "competitions": [
+    {
+     "id": "401873185",
+     "date": "2027-01-10T05:00Z",
+     "timeValid": false,
+     "status": {
+      "type": {
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "shortDetail": "TBD"
+      }
+     },
+     "broadcasts": [],
+     "competitors": [
+      {
+       "id": "14",
+       "homeAway": "home",
+       "team": {
+        "id": "14",
+        "abbreviation": "LAR",
+        "displayName": "Los Angeles Rams",
+        "shortDisplayName": "Rams",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/lar.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "id": "26",
+       "homeAway": "away",
+       "team": {
+        "id": "26",
+        "abbreviation": "SEA",
+        "displayName": "Seattle Seahawks",
+        "shortDisplayName": "Seahawks",
+        "logos": [
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+          "rel": [
+           "full",
+           "default"
+          ]
+         },
+         {
+          "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/sea.png",
+          "rel": [
+           "full",
+           "dark"
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,12 +1,16 @@
+# Every service restarts automatically, including after a reboot (Docker starts at boot).
+# `docker compose stop` or `down` turns the dashboard off until the next `up`.
+#
+# Only the frontend publishes a port. nginx in the frontend container forwards /graphql and
+# /playground to the backend, and the backend reaches Postgres over the Compose network.
 services:
   postgres:
     image: postgres:15
+    restart: unless-stopped
     environment:
       POSTGRES_DB: dashboard
       POSTGRES_USER: dashboard
       POSTGRES_PASSWORD: dashboard
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -17,11 +21,12 @@ services:
 
   backend:
     build: ./backend
-    ports:
-      - "8080:8080"
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgres://dashboard:dashboard@postgres:5432/dashboard
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      REDDIT_CLIENT_ID: ${REDDIT_CLIENT_ID:-}
+      REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET:-}
       DEFAULT_LAT: ${DEFAULT_LAT:-}
       DEFAULT_LON: ${DEFAULT_LON:-}
       DEFAULT_LOCATION_NAME: ${DEFAULT_LOCATION_NAME:-}
@@ -32,12 +37,10 @@ services:
         condition: service_healthy
 
   frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_URL: http://localhost:8080/graphql
+    build: ./frontend
+    restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${DASHBOARD_PORT:-7070}:80"
     depends_on:
       - backend
 

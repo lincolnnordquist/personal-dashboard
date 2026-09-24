@@ -9,44 +9,10 @@ import (
 	"strconv"
 )
 
-type DockerContainer struct {
-	Name   string `json:"name"`
-	Status string `json:"status"`
-	Image  string `json:"image"`
-	Uptime string `json:"uptime"`
-}
-
-type Game struct {
-	HomeTeam  string `json:"homeTeam"`
-	AwayTeam  string `json:"awayTeam"`
-	HomeScore *int   `json:"homeScore,omitempty"`
-	AwayScore *int   `json:"awayScore,omitempty"`
-	Status    string `json:"status"`
-	Date      string `json:"date"`
-}
-
 type Mutation struct {
 }
 
 type Query struct {
-}
-
-type RedditPost struct {
-	Title        string `json:"title"`
-	Score        int    `json:"score"`
-	CommentCount int    `json:"commentCount"`
-	URL          string `json:"url"`
-	Author       string `json:"author"`
-}
-
-type SportsData struct {
-	RecentGames   []*Game `json:"recentGames"`
-	UpcomingGames []*Game `json:"upcomingGames"`
-}
-
-type SubredditFeed struct {
-	Subreddit string        `json:"subreddit"`
-	Posts     []*RedditPost `json:"posts"`
 }
 
 type YoutubeChannel struct {

@@ -9,9 +9,16 @@ type Query {
   widgets: [WidgetConfig!]!
   "location is a display name echoed back in the result; Open-Meteo does not return place names."
   weatherData(lat: Float!, lon: Float!, unit: TemperatureUnit = F, location: String): WeatherData
+  "This week's league scoreboard. teamIds (abbreviations or ESPN ids) limits it to games involving those teams. Only \"nfl\" is supported."
   sportsData(sport: String!, teamIds: [String!]): SportsData
+  "A team's full season schedule. teamId is an abbreviation (\"sea\") or ESPN id."
+  teamSchedule(sport: String!, teamId: String!): TeamSchedule
+  "League standings grouped by conference and division."
+  standings(sport: String!): [StandingsConference!]!
+  "Subreddits that fail to load are left out of the result and reported in errors."
   redditData(subreddits: [String!]!): [SubredditFeed!]!
   youtubeData(channelIds: [String!]!): [YoutubeChannel!]!
+  "Every container on the host, running containers first. Always live, never cached."
   dockerData: [DockerContainer!]!
 }
 
@@ -37,17 +44,89 @@ type WeatherData {
 }
 
 type SportsData {
+  week: Int
+  "Live games first, then finished games, most recent first. Between weeks these are last week's results."
   recentGames: [Game!]!
+  "Soonest first."
   upcomingGames: [Game!]!
 }
 
+enum GameStatus {
+  SCHEDULED
+  IN_PROGRESS
+  FINAL
+  POSTPONED
+  CANCELED
+}
+
 type Game {
-  homeTeam: String!
-  awayTeam: String!
-  homeScore: Int
-  awayScore: Int
-  status: String!
+  id: String!
+  week: Int
+  "RFC 3339 kickoff time."
   date: String!
+  "False when the kickoff time is not set yet; date is then a placeholder."
+  timeValid: Boolean!
+  status: GameStatus!
+  "ESPN's short status text, e.g. \"Final/OT\", \"3rd 5:12\", \"9/27 - 1:00 PM EDT\"."
+  statusDetail: String!
+  broadcast: String
+  home: GameTeam!
+  away: GameTeam!
+}
+
+type GameTeam {
+  team: Team!
+  "Null before kickoff."
+  score: Int
+  "Null until the game is final."
+  winner: Boolean
+  "Overall record, e.g. \"2-1\"."
+  record: String
+}
+
+type Team {
+  id: String!
+  abbreviation: String!
+  displayName: String!
+  shortName: String!
+  "Logo image URL; may be empty."
+  logo: String!
+  "Hex color without #; may be empty."
+  color: String!
+}
+
+type TeamSchedule {
+  team: Team!
+  record: String!
+  "e.g. \"1st in NFC West\"."
+  standingSummary: String!
+  byeWeek: Int
+  "The first game that is live or not yet played; null once the season is over."
+  nextGame: Game
+  games: [Game!]!
+}
+
+type StandingsConference {
+  name: String!
+  abbreviation: String!
+  divisions: [StandingsDivision!]!
+}
+
+type StandingsDivision {
+  name: String!
+  "In standings order, tiebreakers applied."
+  teams: [StandingsEntry!]!
+}
+
+type StandingsEntry {
+  team: Team!
+  wins: Int!
+  losses: Int!
+  ties: Int!
+  winPercent: String!
+  pointDifferential: String!
+  streak: String!
+  playoffSeed: Int
 }
 
 type SubredditFeed {
@@ -57,10 +136,14 @@ type SubredditFeed {
 
 type RedditPost {
   title: String!
-  score: Int!
-  commentCount: Int!
+  "Null when posts come from the RSS feed (no Reddit API credentials configured)."
+  score: Int
+  "Null when posts come from the RSS feed (no Reddit API credentials configured)."
+  commentCount: Int
   url: String!
   author: String!
+  "RFC 3339 timestamp."
+  publishedAt: String!
 }
 
 type YoutubeChannel {
@@ -76,8 +159,19 @@ type YoutubeVideo {
 }
 
 type DockerContainer {
+  id: String!
   name: String!
+  "running, restarting, paused, created, removing, exited, or dead."
   status: String!
+  "healthy, unhealthy, or starting; null when the container has no healthcheck."
+  health: String
   image: String!
+  "How long a running container has been up, e.g. \"3h 12m\"; empty when not running."
   uptime: String!
+  "Docker's own summary, e.g. \"Exited (0) 2 days ago\"."
+  statusText: String!
+  "Docker Compose project, when the container belongs to one."
+  project: String
+  "Docker Compose service name, when the container belongs to a project."
+  service: String
 }

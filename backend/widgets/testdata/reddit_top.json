@@ -1,0 +1,36 @@
+{
+  "kind": "Listing",
+  "data": {
+    "after": "t3_1wo1abc",
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "subreddit": "golang",
+          "title": "Always Active: Faking Microsoft Teams Green Status in Go",
+          "author": "derjanni",
+          "score": 214,
+          "num_comments": 37,
+          "permalink": "/r/golang/comments/1wo3y4m/always_active_faking_microsoft_teams_green_status/",
+          "url": "https://programmers.fyi/always-active-faking-microsoft-teams-green-status-in-go",
+          "created_utc": 1790164651.0,
+          "stickied": false
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "subreddit": "golang",
+          "title": "Generics vs interfaces & when to use which?",
+          "author": "gopher_fan",
+          "score": 0,
+          "num_comments": 0,
+          "permalink": "/r/golang/comments/1wo1abc/generics_vs_interfaces_when_to_use_which/",
+          "url": "https://www.reddit.com/r/golang/comments/1wo1abc/generics_vs_interfaces_when_to_use_which/",
+          "created_utc": 1790150530.0,
+          "stickied": false
+        }
+      }
+    ]
+  }
+}

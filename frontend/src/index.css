@@ -6,6 +6,13 @@
   --muted: #8b93a1;
   --accent: #7aa2f7;
   --error: #f7768e;
+  --win: #9ece6a;
+  --warn: #e0af68;
+  --live: #f7768e;
+  --highlight: rgba(122, 162, 247, 0.12);
+  /* Cards are translucent so the background video shows through, blurred. */
+  --glass: rgba(23, 26, 33, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.07);
 
   color-scheme: dark;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -25,6 +32,8 @@ body {
 }
 
 .app {
+  position: relative;
+  z-index: 1;
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px 16px;
@@ -38,14 +47,16 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* min() keeps a single column from overflowing on narrow phones. */
+  grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr));
   gap: 16px;
   align-items: start;
 }
 
 .widget {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px) saturate(1.1);
   border-radius: 10px;
   padding: 16px;
 }
@@ -83,4 +94,379 @@ body {
 
 .weather-range {
   font-variant-numeric: tabular-nums;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.tab {
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab.active {
+  color: var(--text);
+  border-color: var(--glass-border);
+  background: rgba(15, 17, 21, 0.6);
+}
+
+.post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.post {
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.post:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.post a {
+  color: var(--text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.post a:hover {
+  color: var(--accent);
+}
+
+.post-meta {
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+/* Long lists scroll inside the card instead of stretching the grid row. */
+.tab-panel {
+  max-height: 520px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  /* Reserve the scrollbar's space and keep content clear of it. */
+  scrollbar-gutter: stable;
+  padding-right: 8px;
+}
+
+.section-label {
+  margin: 14px 0 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.team-logo {
+  display: inline-block;
+  flex: none;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--live);
+  vertical-align: middle;
+}
+
+/* Sports: featured team tab */
+.team-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.team-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.next-game-matchup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+}
+
+.next-game-opponent {
+  font-weight: 500;
+}
+
+.schedule {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 2.6em 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.schedule-row.next {
+  background: var(--highlight);
+}
+
+.schedule-opponent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.schedule-at {
+  width: 1.4em;
+}
+
+.schedule-outcome {
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.result-W {
+  color: var(--win);
+}
+
+.result-L {
+  color: var(--error);
+}
+
+/* Sports: scores */
+.games {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.game {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.game.highlight,
+.standings tr.highlight {
+  background: var(--highlight);
+}
+
+.game-teams {
+  flex: 1;
+}
+
+.team-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.team-line.lost {
+  color: var(--muted);
+}
+
+.team-abbr {
+  width: 3em;
+}
+
+.team-record {
+  font-size: 0.8rem;
+}
+
+.team-score {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.game-status {
+  width: 9em;
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+/* Sports: standings */
+.standings {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.standings th {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: right;
+  padding: 4px;
+}
+
+.standings td {
+  text-align: right;
+  padding: 3px 4px;
+}
+
+/* Fixed layout keeps columns aligned across the separate division tables. */
+.standings {
+  table-layout: fixed;
+}
+
+.standings th:not(.standings-team) {
+  width: 4em;
+}
+
+.standings .standings-team {
+  text-align: left;
+}
+
+.standings th.standings-team {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.standings-team-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Docker */
+.docker-summary {
+  font-size: 0.85rem;
+}
+
+.containers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.container-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.status-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.ok {
+  background: var(--win);
+}
+
+.status-dot.warn {
+  background: var(--warn);
+}
+
+.status-dot.bad {
+  background: var(--error);
+}
+
+.status-dot.off {
+  background: var(--border);
+  box-shadow: inset 0 0 0 1px var(--muted);
+}
+
+.container-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.container-name,
+.container-image {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.container-image {
+  font-size: 0.8rem;
+}
+
+.container-state {
+  flex: none;
+  font-size: 0.8rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.container-state.warn {
+  color: var(--warn);
+}
+
+.container-state.bad {
+  color: var(--error);
+}
+
+.container-state.off {
+  color: var(--muted);
+}
+
+/* Ambient video background */
+.background {
+  position: fixed;
+  inset: 0;
+  /* Not z-index: -1, which would paint underneath body's background color. */
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--bg);
+}
+
+.background-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  /* Keep in sync with FADE_SECONDS in Background.tsx. */
+  transition: opacity 2.5s ease-in-out;
+  /* A slight dim keeps text readable over the brightest scenes. */
+  filter: brightness(0.85);
+}
+
+.background-media.visible {
+  opacity: 1;
+}
+
+/* Light vignette so the edges fade into the page background. */
+.background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(15, 17, 21, 0.55) 100%),
+    linear-gradient(to bottom, rgba(15, 17, 21, 0.35), transparent 15%, transparent 80%, rgba(15, 17, 21, 0.5));
 }

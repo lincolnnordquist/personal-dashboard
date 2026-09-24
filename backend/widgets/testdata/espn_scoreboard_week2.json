@@ -1,0 +1,207 @@
+{
+ "season": {
+  "type": 2,
+  "year": 2026
+ },
+ "week": {
+  "number": 2
+ },
+ "events": [
+  {
+   "id": "401872932",
+   "date": "2026-09-18T00:15Z",
+   "name": "Detroit Lions at Buffalo Bills",
+   "shortName": "DET @ BUF",
+   "week": {
+    "number": 2
+   },
+   "competitions": [
+    {
+     "id": "401872932",
+     "date": "2026-09-18T00:15Z",
+     "timeValid": true,
+     "status": {
+      "type": {
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "Prime Video"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "id": "2",
+       "homeAway": "home",
+       "winner": true,
+       "score": "41",
+       "records": [
+        {
+         "name": "overall",
+         "abbreviation": "Game",
+         "type": "total",
+         "summary": "2-0"
+        },
+        {
+         "name": "Home",
+         "type": "home",
+         "summary": "1-0"
+        },
+        {
+         "name": "Road",
+         "type": "road",
+         "summary": "1-0"
+        }
+       ],
+       "team": {
+        "id": "2",
+        "abbreviation": "BUF",
+        "displayName": "Buffalo Bills",
+        "shortDisplayName": "Bills",
+        "color": "00338d",
+        "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/buf.png"
+       }
+      },
+      {
+       "id": "8",
+       "homeAway": "away",
+       "winner": false,
+       "score": "31",
+       "records": [
+        {
+         "name": "overall",
+         "abbreviation": "Game",
+         "type": "total",
+         "summary": "1-1"
+        },
+        {
+         "name": "Home",
+         "type": "home",
+         "summary": "1-0"
+        },
+        {
+         "name": "Road",
+         "type": "road",
+         "summary": "0-1"
+        }
+       ],
+       "team": {
+        "id": "8",
+        "abbreviation": "DET",
+        "displayName": "Detroit Lions",
+        "shortDisplayName": "Lions",
+        "color": "0076b6",
+        "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/det.png"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401872933",
+   "date": "2026-09-20T17:00Z",
+   "name": "Carolina Panthers at Atlanta Falcons",
+   "shortName": "CAR @ ATL",
+   "week": {
+    "number": 2
+   },
+   "competitions": [
+    {
+     "id": "401872933",
+     "date": "2026-09-20T17:00Z",
+     "timeValid": true,
+     "status": {
+      "type": {
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "FOX"
+       ]
+      }
+     ],
+     "competitors": [
+      {
+       "id": "1",
+       "homeAway": "home",
+       "winner": false,
+       "score": "3",
+       "records": [
+        {
+         "name": "overall",
+         "abbreviation": "Game",
+         "type": "total",
+         "summary": "0-2"
+        },
+        {
+         "name": "Home",
+         "type": "home",
+         "summary": "0-1"
+        },
+        {
+         "name": "Road",
+         "type": "road",
+         "summary": "0-1"
+        }
+       ],
+       "team": {
+        "id": "1",
+        "abbreviation": "ATL",
+        "displayName": "Atlanta Falcons",
+        "shortDisplayName": "Falcons",
+        "color": "a71930",
+        "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/atl.png"
+       }
+      },
+      {
+       "id": "29",
+       "homeAway": "away",
+       "winner": true,
+       "score": "34",
+       "records": [
+        {
+         "name": "overall",
+         "abbreviation": "Game",
+         "type": "total",
+         "summary": "1-1"
+        },
+        {
+         "name": "Home",
+         "type": "home",
+         "summary": "0-1"
+        },
+        {
+         "name": "Road",
+         "type": "road",
+         "summary": "1-0"
+        }
+       ],
+       "team": {
+        "id": "29",
+        "abbreviation": "CAR",
+        "displayName": "Carolina Panthers",
+        "shortDisplayName": "Panthers",
+        "color": "0085ca",
+        "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/car.png"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

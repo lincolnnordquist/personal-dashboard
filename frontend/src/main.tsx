@@ -6,8 +6,15 @@ import './index.css'
 import App from './App.tsx'
 
 const client = new ApolloClient({
-  link: new HttpLink({ uri: import.meta.env.VITE_API_URL ?? 'http://localhost:8080/graphql' }),
-  cache: new InMemoryCache(),
+  // Same origin as the page: nginx (or the Vite dev server) forwards /graphql to the backend.
+  link: new HttpLink({ uri: '/graphql' }),
+  cache: new InMemoryCache({
+    typePolicies: {
+      // A game's home/away objects have no id, so tell Apollo it is safe to merge them
+      // when the same game arrives from both the scoreboard and a team schedule.
+      Game: { fields: { home: { merge: true }, away: { merge: true } } },
+    },
+  }),
 })
 
 createRoot(document.getElementById('root')!).render(
