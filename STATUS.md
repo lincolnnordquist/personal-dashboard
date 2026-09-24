@@ -10,10 +10,16 @@ Nothing in progress. Next up is the **Twitch channels** widget (see backlog).
 
 1. **Twitch channels widget.** Glance-style list: avatar, name, live/offline, game and viewers when live. Goes in the left column under Docker. Needs a Twitch app (client ID + secret) for the Helix API.
 2. **GitHub releases widget.** Repo, latest version, and age, like Glance. Goes in the right column under Weather. Works without a token (60 req/hr); an optional token raises the limit.
-3. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
-4. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
-5. **Polish (spec step 8).**
-6. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
+3. **Zelda music player.** Decided with the user 2026-09-24:
+   - Plays through the **official YouTube IFrame embed API**, not downloads (YouTube's terms). A small player/thumbnail must stay visible. Some videos block embedding, so detect that and skip them with a message.
+   - **Adding songs:** paste a YouTube video URL into an "add song" box in the player. Store the video ID, title, and thumbnail in Postgres (new table plus a migration); songs can be removed.
+   - **Playback:** shuffle randomly with no repeats until every song has played, and fade in/out between songs by ramping volume (two players, crossfaded).
+   - **UI:** a floating player pinned bottom-right on every page with artwork, title, play/pause, skip, volume, and add/manage songs.
+4. **Focus ("clear") mode.** A toggle button that hides everything except the video background, the floating music player, and a **large centered clock with the date**. For using the site as ambient music while focusing. Remember the choice across reloads (localStorage).
+5. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
+6. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
+7. **Polish (spec step 8).**
+8. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
 
 ## Done
 
