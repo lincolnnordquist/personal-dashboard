@@ -6,12 +6,14 @@ import (
 
 	"dashboard/cache"
 	"dashboard/db"
+	"dashboard/music"
 	"dashboard/widgets"
 )
 
 // Resolver holds the dependencies shared by all resolvers.
 type Resolver struct {
 	WidgetRepo *db.WidgetRepo
+	Music      *music.Library
 	Cache      cache.Store
 	Weather    *widgets.WeatherClient
 	Reddit     *widgets.RedditClient

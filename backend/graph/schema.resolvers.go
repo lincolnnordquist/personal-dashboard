@@ -36,6 +36,47 @@ func (r *mutationResolver) ToggleWidget(ctx context.Context, id int, enabled boo
 	return w, err
 }
 
+// CreatePlaylist is the resolver for the createPlaylist field.
+func (r *mutationResolver) CreatePlaylist(ctx context.Context, name string) (*db.Playlist, error) {
+	return r.Music.CreatePlaylist(ctx, name)
+}
+
+// RenamePlaylist is the resolver for the renamePlaylist field.
+func (r *mutationResolver) RenamePlaylist(ctx context.Context, id int, name string) (*db.Playlist, error) {
+	p, err := r.Music.RenamePlaylist(ctx, id, name)
+	if errors.Is(err, db.ErrNotFound) {
+		return nil, fmt.Errorf("playlist %d not found", id)
+	}
+	return p, err
+}
+
+// DeletePlaylist is the resolver for the deletePlaylist field.
+func (r *mutationResolver) DeletePlaylist(ctx context.Context, id int) (bool, error) {
+	err := r.Music.DeletePlaylist(ctx, id)
+	if errors.Is(err, db.ErrNotFound) {
+		return false, fmt.Errorf("playlist %d not found", id)
+	}
+	return err == nil, err
+}
+
+// AddSong is the resolver for the addSong field.
+func (r *mutationResolver) AddSong(ctx context.Context, playlistID int, url string) (*db.Song, error) {
+	song, err := r.Music.AddSong(ctx, playlistID, url)
+	if errors.Is(err, db.ErrNotFound) {
+		return nil, fmt.Errorf("playlist %d not found", playlistID)
+	}
+	return song, err
+}
+
+// RemoveSong is the resolver for the removeSong field.
+func (r *mutationResolver) RemoveSong(ctx context.Context, id int) (bool, error) {
+	err := r.Music.RemoveSong(ctx, id)
+	if errors.Is(err, db.ErrNotFound) {
+		return false, fmt.Errorf("song %d not found", id)
+	}
+	return err == nil, err
+}
+
 // Widgets is the resolver for the widgets field.
 func (r *queryResolver) Widgets(ctx context.Context) ([]*db.WidgetConfig, error) {
 	return r.WidgetRepo.List(ctx)
@@ -140,6 +181,11 @@ func (r *queryResolver) DockerData(ctx context.Context) ([]*widgets.DockerContai
 		return nil, errors.New("docker: client not available")
 	}
 	return r.Docker.Containers(ctx)
+}
+
+// Playlists is the resolver for the playlists field.
+func (r *queryResolver) Playlists(ctx context.Context) ([]*db.Playlist, error) {
+	return r.Music.Playlists(ctx)
 }
 
 // Mutation returns MutationResolver implementation.

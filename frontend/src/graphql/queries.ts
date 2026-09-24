@@ -300,3 +300,86 @@ export const GET_YOUTUBE: TypedDocumentNode<{ youtubeData: YoutubeChannel[] }, {
     }
   }
 `
+
+export interface Song {
+  id: number
+  playlistId: number
+  videoId: string
+  title: string
+  channelName: string
+  thumbnailUrl: string
+  addedAt: string
+}
+
+export interface Playlist {
+  id: number
+  name: string
+  songs: Song[]
+}
+
+const SONG_FIELDS = gql`
+  fragment SongFields on Song {
+    id
+    playlistId
+    videoId
+    title
+    channelName
+    thumbnailUrl
+    addedAt
+  }
+`
+
+export const GET_PLAYLISTS: TypedDocumentNode<{ playlists: Playlist[] }> = gql`
+  ${SONG_FIELDS}
+  query GetPlaylists {
+    playlists {
+      id
+      name
+      songs {
+        ...SongFields
+      }
+    }
+  }
+`
+
+export const CREATE_PLAYLIST: TypedDocumentNode<{ createPlaylist: { id: number; name: string } }, { name: string }> = gql`
+  mutation CreatePlaylist($name: String!) {
+    createPlaylist(name: $name) {
+      id
+      name
+    }
+  }
+`
+
+export const RENAME_PLAYLIST: TypedDocumentNode<
+  { renamePlaylist: { id: number; name: string } },
+  { id: number; name: string }
+> = gql`
+  mutation RenamePlaylist($id: Int!, $name: String!) {
+    renamePlaylist(id: $id, name: $name) {
+      id
+      name
+    }
+  }
+`
+
+export const DELETE_PLAYLIST: TypedDocumentNode<{ deletePlaylist: boolean }, { id: number }> = gql`
+  mutation DeletePlaylist($id: Int!) {
+    deletePlaylist(id: $id)
+  }
+`
+
+export const ADD_SONG: TypedDocumentNode<{ addSong: Song }, { playlistId: number; url: string }> = gql`
+  ${SONG_FIELDS}
+  mutation AddSong($playlistId: Int!, $url: String!) {
+    addSong(playlistId: $playlistId, url: $url) {
+      ...SongFields
+    }
+  }
+`
+
+export const REMOVE_SONG: TypedDocumentNode<{ removeSong: boolean }, { id: number }> = gql`
+  mutation RemoveSong($id: Int!) {
+    removeSong(id: $id)
+  }
+`

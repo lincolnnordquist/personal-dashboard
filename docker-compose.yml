@@ -30,8 +30,11 @@ services:
       DEFAULT_LAT: ${DEFAULT_LAT:-}
       DEFAULT_LON: ${DEFAULT_LON:-}
       DEFAULT_LOCATION_NAME: ${DEFAULT_LOCATION_NAME:-}
+      # Music playlists live in the repo (music/playlists/*.txt) so they sync through git.
+      PLAYLIST_DIR: /data/music/playlists
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./music:/data/music
     depends_on:
       postgres:
         condition: service_healthy

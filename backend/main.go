@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"dashboard/config"
 	"dashboard/db"
 	"dashboard/graph"
+	"dashboard/music"
 	"dashboard/widgets"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -40,6 +42,16 @@ func main() {
 	}
 
 	repo := db.NewWidgetRepo(pool)
+	// Before multiple playlists, the playlist was a single playlist.txt beside the folder.
+	var legacyPlaylist string
+	if cfg.PlaylistDir != "" {
+		legacyPlaylist = filepath.Join(filepath.Dir(cfg.PlaylistDir), "playlist.txt")
+	}
+	library := music.NewLibrary(db.NewMusicRepo(pool), music.NewOEmbedClient(), cfg.PlaylistDir, legacyPlaylist)
+	if err := library.Sync(ctx); err != nil {
+		log.Printf("playlist sync: %v", err)
+	}
+	go library.Watch(ctx, 5*time.Second)
 	store := cache.NewPostgresStore(pool)
 	weather := widgets.NewWeatherClient()
 	reddit := widgets.NewRedditClient(cfg.RedditClientID, cfg.RedditClientSecret)
@@ -63,6 +75,7 @@ func main() {
 
 	resolver := &graph.Resolver{
 		WidgetRepo: repo,
+		Music:      library,
 		Cache:      store,
 		Weather:    weather,
 		Reddit:     reddit,

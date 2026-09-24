@@ -57,6 +57,35 @@ INSERT INTO widget_config (widget_type, config, position, layout_column)
 SELECT 'calendar', '{"sport": "nfl", "team": "sea"}', 0, 'left'
 WHERE EXISTS (SELECT 1 FROM widget_config)
   AND NOT EXISTS (SELECT 1 FROM widget_config WHERE widget_type = 'calendar');`,
+
+	// 3: music player playlist.
+	`
+CREATE TABLE songs (
+    id SERIAL PRIMARY KEY,
+    video_id VARCHAR(11) NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    channel_name TEXT NOT NULL,
+    thumbnail_url TEXT NOT NULL,
+    added_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+);`,
+
+	// 4: multiple playlists. Each song now belongs to one playlist, and the same video can be
+	// in several. Existing songs move into a playlist named "Zelda".
+	`
+CREATE TABLE playlists (
+    id SERIAL PRIMARY KEY,
+    slug VARCHAR(64) NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+);
+
+INSERT INTO playlists (slug, name) SELECT 'zelda', 'Zelda' WHERE EXISTS (SELECT 1 FROM songs);
+
+ALTER TABLE songs ADD COLUMN playlist_id INT REFERENCES playlists(id) ON DELETE CASCADE;
+UPDATE songs SET playlist_id = (SELECT id FROM playlists WHERE slug = 'zelda');
+ALTER TABLE songs ALTER COLUMN playlist_id SET NOT NULL;
+ALTER TABLE songs DROP CONSTRAINT songs_video_id_key;
+ALTER TABLE songs ADD CONSTRAINT songs_playlist_video_key UNIQUE (playlist_id, video_id);`,
 }
 
 // Connect opens a connection pool, retrying while Postgres finishes starting up.

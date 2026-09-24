@@ -21,11 +21,20 @@ type Query {
   youtubeData(channelIds: [String!]!): [YoutubeChannel!]!
   "Every container on the host, running containers first. Always live, never cached."
   dockerData: [DockerContainer!]!
+  "The music player's playlists, by name. Each playlist's songs are in the order they were added."
+  playlists: [Playlist!]!
 }
 
 type Mutation {
   updateWidgetConfig(id: Int!, config: JSON!, position: Int): WidgetConfig!
   toggleWidget(id: Int!, enabled: Boolean!): WidgetConfig!
+  createPlaylist(name: String!): Playlist!
+  renamePlaylist(id: Int!, name: String!): Playlist!
+  "Deletes a playlist and its songs."
+  deletePlaylist(id: Int!): Boolean!
+  "Adds a YouTube video to a playlist. Accepts any YouTube video link or an 11-character video ID. Fails if the video doesn't exist, can't be embedded, or is already in that playlist."
+  addSong(playlistId: Int!, url: String!): Song!
+  removeSong(id: Int!): Boolean!
 }
 
 type WidgetConfig {
@@ -186,4 +195,22 @@ type DockerContainer {
   project: String
   "Docker Compose service name, when the container belongs to a project."
   service: String
+}
+
+type Playlist {
+  id: Int!
+  name: String!
+  songs: [Song!]!
+}
+
+type Song {
+  id: Int!
+  playlistId: Int!
+  videoId: String!
+  title: String!
+  channelName: String!
+  "320x180 thumbnail."
+  thumbnailUrl: String!
+  "RFC 3339 timestamp."
+  addedAt: String!
 }

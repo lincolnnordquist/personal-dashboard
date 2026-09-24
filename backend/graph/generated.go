@@ -71,12 +71,24 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddSong            func(childComplexity int, playlistID int, url string) int
+		CreatePlaylist     func(childComplexity int, name string) int
+		DeletePlaylist     func(childComplexity int, id int) int
+		RemoveSong         func(childComplexity int, id int) int
+		RenamePlaylist     func(childComplexity int, id int, name string) int
 		ToggleWidget       func(childComplexity int, id int, enabled bool) int
 		UpdateWidgetConfig func(childComplexity int, id int, config map[string]any, position *int) int
 	}
 
+	Playlist struct {
+		ID    func(childComplexity int) int
+		Name  func(childComplexity int) int
+		Songs func(childComplexity int) int
+	}
+
 	Query struct {
 		DockerData   func(childComplexity int) int
+		Playlists    func(childComplexity int) int
 		RedditData   func(childComplexity int, subreddits []string) int
 		SportsData   func(childComplexity int, sport string, teamIds []string) int
 		Standings    func(childComplexity int, sport string) int
@@ -93,6 +105,16 @@ type ComplexityRoot struct {
 		Score        func(childComplexity int) int
 		Title        func(childComplexity int) int
 		URL          func(childComplexity int) int
+	}
+
+	Song struct {
+		AddedAt      func(childComplexity int) int
+		ChannelName  func(childComplexity int) int
+		ID           func(childComplexity int) int
+		PlaylistID   func(childComplexity int) int
+		ThumbnailURL func(childComplexity int) int
+		Title        func(childComplexity int) int
+		VideoID      func(childComplexity int) int
 	}
 
 	SportsData struct {
@@ -187,6 +209,11 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	UpdateWidgetConfig(ctx context.Context, id int, config map[string]any, position *int) (*db.WidgetConfig, error)
 	ToggleWidget(ctx context.Context, id int, enabled bool) (*db.WidgetConfig, error)
+	CreatePlaylist(ctx context.Context, name string) (*db.Playlist, error)
+	RenamePlaylist(ctx context.Context, id int, name string) (*db.Playlist, error)
+	DeletePlaylist(ctx context.Context, id int) (bool, error)
+	AddSong(ctx context.Context, playlistID int, url string) (*db.Song, error)
+	RemoveSong(ctx context.Context, id int) (bool, error)
 }
 type QueryResolver interface {
 	Widgets(ctx context.Context) ([]*db.WidgetConfig, error)
@@ -197,6 +224,7 @@ type QueryResolver interface {
 	RedditData(ctx context.Context, subreddits []string) ([]*widgets.SubredditFeed, error)
 	YoutubeData(ctx context.Context, channelIds []string) ([]*widgets.YoutubeChannel, error)
 	DockerData(ctx context.Context) ([]*widgets.DockerContainer, error)
+	Playlists(ctx context.Context) ([]*db.Playlist, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -352,6 +380,61 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.GameTeam.Winner(childComplexity), true
 
+	case "Mutation.addSong":
+		if e.ComplexityRoot.Mutation.AddSong == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addSong_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AddSong(childComplexity, args["playlistId"].(int), args["url"].(string)), true
+	case "Mutation.createPlaylist":
+		if e.ComplexityRoot.Mutation.CreatePlaylist == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPlaylist_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreatePlaylist(childComplexity, args["name"].(string)), true
+	case "Mutation.deletePlaylist":
+		if e.ComplexityRoot.Mutation.DeletePlaylist == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deletePlaylist_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeletePlaylist(childComplexity, args["id"].(int)), true
+	case "Mutation.removeSong":
+		if e.ComplexityRoot.Mutation.RemoveSong == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeSong_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RemoveSong(childComplexity, args["id"].(int)), true
+	case "Mutation.renamePlaylist":
+		if e.ComplexityRoot.Mutation.RenamePlaylist == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_renamePlaylist_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RenamePlaylist(childComplexity, args["id"].(int), args["name"].(string)), true
 	case "Mutation.toggleWidget":
 		if e.ComplexityRoot.Mutation.ToggleWidget == nil {
 			break
@@ -375,6 +458,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Mutation.UpdateWidgetConfig(childComplexity, args["id"].(int), args["config"].(map[string]any), args["position"].(*int)), true
 
+	case "Playlist.id":
+		if e.ComplexityRoot.Playlist.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Playlist.ID(childComplexity), true
+	case "Playlist.name":
+		if e.ComplexityRoot.Playlist.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Playlist.Name(childComplexity), true
+	case "Playlist.songs":
+		if e.ComplexityRoot.Playlist.Songs == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Playlist.Songs(childComplexity), true
+
 	case "Query.dockerData":
 		if e.ComplexityRoot.Query.DockerData == nil {
 			break
@@ -382,6 +484,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Query.DockerData(childComplexity), true
 
+	case "Query.playlists":
+		if e.ComplexityRoot.Query.Playlists == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.Playlists(childComplexity), true
 	case "Query.redditData":
 		if e.ComplexityRoot.Query.RedditData == nil {
 			break
@@ -491,6 +599,49 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.RedditPost.URL(childComplexity), true
+
+	case "Song.addedAt":
+		if e.ComplexityRoot.Song.AddedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Song.AddedAt(childComplexity), true
+	case "Song.channelName":
+		if e.ComplexityRoot.Song.ChannelName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Song.ChannelName(childComplexity), true
+	case "Song.id":
+		if e.ComplexityRoot.Song.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Song.ID(childComplexity), true
+	case "Song.playlistId":
+		if e.ComplexityRoot.Song.PlaylistID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Song.PlaylistID(childComplexity), true
+	case "Song.thumbnailUrl":
+		if e.ComplexityRoot.Song.ThumbnailURL == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Song.ThumbnailURL(childComplexity), true
+	case "Song.title":
+		if e.ComplexityRoot.Song.Title == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Song.Title(childComplexity), true
+	case "Song.videoId":
+		if e.ComplexityRoot.Song.VideoID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Song.VideoID(childComplexity), true
 
 	case "SportsData.recentGames":
 		if e.ComplexityRoot.SportsData.RecentGames == nil {
@@ -972,6 +1123,18 @@ func (ec *executionContext) childFields_GameTeam(ctx context.Context, field grap
 	return nil, fmt.Errorf("no field named %q was found under type GameTeam", field.Name)
 }
 
+func (ec *executionContext) childFields_Playlist(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Playlist_id(ctx, field)
+	case "name":
+		return ec.fieldContext_Playlist_name(ctx, field)
+	case "songs":
+		return ec.fieldContext_Playlist_songs(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Playlist", field.Name)
+}
+
 func (ec *executionContext) childFields_RedditPost(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "title":
@@ -988,6 +1151,26 @@ func (ec *executionContext) childFields_RedditPost(ctx context.Context, field gr
 		return ec.fieldContext_RedditPost_publishedAt(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type RedditPost", field.Name)
+}
+
+func (ec *executionContext) childFields_Song(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Song_id(ctx, field)
+	case "playlistId":
+		return ec.fieldContext_Song_playlistId(ctx, field)
+	case "videoId":
+		return ec.fieldContext_Song_videoId(ctx, field)
+	case "title":
+		return ec.fieldContext_Song_title(ctx, field)
+	case "channelName":
+		return ec.fieldContext_Song_channelName(ctx, field)
+	case "thumbnailUrl":
+		return ec.fieldContext_Song_thumbnailUrl(ctx, field)
+	case "addedAt":
+		return ec.fieldContext_Song_addedAt(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Song", field.Name)
 }
 
 func (ec *executionContext) childFields_SportsData(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1273,6 +1456,92 @@ func (ec *executionContext) childFields___Type(ctx context.Context, field graphq
 // endregion ************************** internal!.gotpl ***************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_addSong_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "playlistId",
+		func(ctx context.Context, v any) (int, error) {
+			return ec.unmarshalNInt2int(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["playlistId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "url",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["url"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createPlaylist_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "name",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deletePlaylist_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (int, error) {
+			return ec.unmarshalNInt2int(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_removeSong_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (int, error) {
+			return ec.unmarshalNInt2int(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_renamePlaylist_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (int, error) {
+			return ec.unmarshalNInt2int(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "name",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["name"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_toggleWidget_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -2145,6 +2414,304 @@ func (ec *executionContext) fieldContext_Mutation_toggleWidget(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createPlaylist(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_createPlaylist(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreatePlaylist(ctx, fc.Args["name"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *db.Playlist) graphql.Marshaler {
+			return ec.marshalNPlaylist2ᚖdashboardᚋdbᚐPlaylist(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_createPlaylist(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Playlist(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createPlaylist_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_renamePlaylist(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_renamePlaylist(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RenamePlaylist(ctx, fc.Args["id"].(int), fc.Args["name"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *db.Playlist) graphql.Marshaler {
+			return ec.marshalNPlaylist2ᚖdashboardᚋdbᚐPlaylist(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_renamePlaylist(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Playlist(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_renamePlaylist_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deletePlaylist(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_deletePlaylist(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DeletePlaylist(ctx, fc.Args["id"].(int))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_deletePlaylist(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deletePlaylist_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addSong(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_addSong(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().AddSong(ctx, fc.Args["playlistId"].(int), fc.Args["url"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *db.Song) graphql.Marshaler {
+			return ec.marshalNSong2ᚖdashboardᚋdbᚐSong(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_addSong(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Song(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addSong_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_removeSong(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_removeSong(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RemoveSong(ctx, fc.Args["id"].(int))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_removeSong(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_removeSong_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Playlist_id(ctx context.Context, field graphql.CollectedField, obj *db.Playlist) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Playlist_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Playlist_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Playlist", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Playlist_name(ctx context.Context, field graphql.CollectedField, obj *db.Playlist) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Playlist_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Playlist_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Playlist", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Playlist_songs(ctx context.Context, field graphql.CollectedField, obj *db.Playlist) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Playlist_songs(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Songs, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*db.Song) graphql.Marshaler {
+			return ec.marshalNSong2ᚕᚖdashboardᚋdbᚐSongᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Playlist_songs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Playlist",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Song(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_widgets(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2473,6 +3040,38 @@ func (ec *executionContext) fieldContext_Query_dockerData(_ context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_playlists(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_playlists(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().Playlists(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*db.Playlist) graphql.Marshaler {
+			return ec.marshalNPlaylist2ᚕᚖdashboardᚋdbᚐPlaylistᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_playlists(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Playlist(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2685,6 +3284,167 @@ func (ec *executionContext) _RedditPost_publishedAt(ctx context.Context, field g
 }
 func (ec *executionContext) fieldContext_RedditPost_publishedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("RedditPost", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Song_id(ctx context.Context, field graphql.CollectedField, obj *db.Song) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Song_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Song_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Song", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Song_playlistId(ctx context.Context, field graphql.CollectedField, obj *db.Song) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Song_playlistId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PlaylistID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Song_playlistId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Song", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Song_videoId(ctx context.Context, field graphql.CollectedField, obj *db.Song) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Song_videoId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.VideoID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Song_videoId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Song", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Song_title(ctx context.Context, field graphql.CollectedField, obj *db.Song) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Song_title(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Title, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Song_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Song", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Song_channelName(ctx context.Context, field graphql.CollectedField, obj *db.Song) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Song_channelName(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ChannelName, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Song_channelName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Song", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Song_thumbnailUrl(ctx context.Context, field graphql.CollectedField, obj *db.Song) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Song_thumbnailUrl(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ThumbnailURL, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Song_thumbnailUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Song", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Song_addedAt(ctx context.Context, field graphql.CollectedField, obj *db.Song) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Song_addedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AddedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Song_addedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Song", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _SportsData_week(ctx context.Context, field graphql.CollectedField, obj *widgets.SportsData) (ret graphql.Marshaler) {
@@ -5260,6 +6020,89 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "createPlaylist":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createPlaylist(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "renamePlaylist":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_renamePlaylist(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deletePlaylist":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deletePlaylist(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "addSong":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addSong(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "removeSong":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_removeSong(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var playlistImplementors = []string{"Playlist"}
+
+func (ec *executionContext) _Playlist(ctx context.Context, sel ast.SelectionSet, obj *db.Playlist) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, playlistImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Playlist")
+		case "id":
+			out.Values[i] = ec._Playlist_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Playlist_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "songs":
+			out.Values[i] = ec._Playlist_songs(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5477,6 +6320,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "playlists":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_playlists(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -5551,6 +6416,74 @@ func (ec *executionContext) _RedditPost(ctx context.Context, sel ast.SelectionSe
 			}
 		case "publishedAt":
 			out.Values[i] = ec._RedditPost_publishedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var songImplementors = []string{"Song"}
+
+func (ec *executionContext) _Song(ctx context.Context, sel ast.SelectionSet, obj *db.Song) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, songImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Song")
+		case "id":
+			out.Values[i] = ec._Song_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "playlistId":
+			out.Values[i] = ec._Song_playlistId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "videoId":
+			out.Values[i] = ec._Song_videoId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "title":
+			out.Values[i] = ec._Song_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "channelName":
+			out.Values[i] = ec._Song_channelName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "thumbnailUrl":
+			out.Values[i] = ec._Song_thumbnailUrl(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "addedAt":
+			out.Values[i] = ec._Song_addedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6727,6 +7660,32 @@ func (ec *executionContext) marshalNJSON2map(ctx context.Context, sel ast.Select
 	return res
 }
 
+func (ec *executionContext) marshalNPlaylist2ᚕᚖdashboardᚋdbᚐPlaylistᚄ(ctx context.Context, sel ast.SelectionSet, v []*db.Playlist) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNPlaylist2ᚖdashboardᚋdbᚐPlaylist(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNPlaylist2ᚖdashboardᚋdbᚐPlaylist(ctx context.Context, sel ast.SelectionSet, v *db.Playlist) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Playlist(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNRedditPost2ᚕᚖdashboardᚋwidgetsᚐRedditPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*widgets.RedditPost) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -6751,6 +7710,32 @@ func (ec *executionContext) marshalNRedditPost2ᚖdashboardᚋwidgetsᚐRedditPo
 		return graphql.Null
 	}
 	return ec._RedditPost(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSong2ᚕᚖdashboardᚋdbᚐSongᚄ(ctx context.Context, sel ast.SelectionSet, v []*db.Song) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNSong2ᚖdashboardᚋdbᚐSong(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSong2ᚖdashboardᚋdbᚐSong(ctx context.Context, sel ast.SelectionSet, v *db.Song) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Song(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNStandingsConference2ᚕᚖdashboardᚋwidgetsᚐStandingsConferenceᚄ(ctx context.Context, sel ast.SelectionSet, v []*widgets.StandingsConference) graphql.Marshaler {

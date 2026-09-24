@@ -13,6 +13,7 @@ type Config struct {
 	YouTubeAPIKey       string
 	RedditClientID      string
 	RedditClientSecret  string
+	PlaylistDir         string
 	DefaultLat          float64
 	DefaultLon          float64
 	DefaultLocationName string
@@ -26,6 +27,7 @@ func Load() (*Config, error) {
 		YouTubeAPIKey:       os.Getenv("YOUTUBE_API_KEY"),
 		RedditClientID:      os.Getenv("REDDIT_CLIENT_ID"),
 		RedditClientSecret:  os.Getenv("REDDIT_CLIENT_SECRET"),
+		PlaylistDir:         os.Getenv("PLAYLIST_DIR"),
 		DefaultLocationName: getEnv("DEFAULT_LOCATION_NAME", "St. George, UT"),
 	}
 	if cfg.DatabaseURL == "" {

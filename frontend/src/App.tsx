@@ -2,6 +2,7 @@ import { useQuery } from '@apollo/client/react'
 import { GET_WIDGETS } from './graphql/queries'
 import Background from './components/Background'
 import Grid from './components/Grid'
+import MusicPlayer from './components/music/MusicPlayer'
 import SearchBar from './components/SearchBar'
 import { greeting } from './format'
 
@@ -20,6 +21,7 @@ export default function App() {
         {error && <p className="error">Could not load widgets: {error.message}</p>}
         {data && <Grid widgets={data.widgets.filter((w) => w.enabled)} />}
       </main>
+      <MusicPlayer />
     </>
   )
 }
