@@ -1,0 +1,38 @@
+# Playlist: oot
+# Music player playlist, shared between machines through git.
+# One YouTube video per line: a video ID or link, optionally followed by "# title — channel".
+# The dashboard rewrites this file when songs are added or removed in the player, and picks
+# up changes made here (for example after a git pull) within a few seconds.
+
+1y5GnZb9J1k  # 1 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 01 Title Theme — OptimusPike
+MmMIJ65OKzY  # 6 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 06 Kokiri Forest — OptimusPike
+rdNbO0OcIXI  # 10 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 10 Shop — OptimusPike
+9LEBZ-zDuKg  # 12 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 12 Inside The Deku Tree — OptimusPike
+peWxf-H6oCY  # 16 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 16 Legend Of Hyrule — OptimusPike
+ZbQZCoKAZUs  # 20 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 20 Kepora Gebora's Theme — OptimusPike
+GH3YMiVkYfU  # 21 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 21 Market — OptimusPike
+_gLuAoLm524  # 22 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 22 Shooting Gallery — OptimusPike
+tJxYhFke9Xc  # 23 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 23 Hyrule Castle Courtyard — OptimusPike
+AnUt3eRGIeE  # 26 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 26 Zelda's Theme — OptimusPike
+S-sbEwxF48U  # 28 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 28 Lon Lon Ranch — OptimusPike
+04c2rDH98_A  # 30 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 30 Kakariko Village — OptimusPike
+uetxBY77qCQ  # 35 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 35 Lost Woods — OptimusPike
+1W5iD1vuFMA  # 37 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 37 Middle Boss Battle — OptimusPike
+pGXJMCIdGoQ  # 39 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 39 Zora's Domain — OptimusPike
+fK91q_rXpS8  # 40 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 40 Great Fairy Fountain — OptimusPike
+H8LHTKmfLc0  # 41 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 41 Potion Shop — OptimusPike
+UfajkVmN6kU  # 44 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 44 Temple Of Time — OptimusPike
+MQLxgwGJlP8  # 47 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 47 Ganondorf's Theme — OptimusPike
+hcu9F77v4LI  # 48 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 48 Chamber Of The Sages — OptimusPike
+LcoV-r8PH7Y  # 50 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 50 Sheik's Theme — OptimusPike
+JX1F9p048HQ  # 51 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 51 Horse Race — OptimusPike
+b2DWj-CrYgg  # 53 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 53 Ingo's Theme — OptimusPike
+uSX5jVTULP4  # 57 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 57 Windmill Hut — OptimusPike
+wPs-yAt_UO8  # 59 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 59 Forest Temple — OptimusPike
+yCjn4IyYoTY  # 62 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 62 Ice Cavern — OptimusPike
+U9BcM2ofm_E  # 68 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 68 Gerudo Valley — OptimusPike
+Y76HJQa93t8  # 69 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 69 Spirit Temple — OptimusPike
+lo_XmOA3PyE  # 71 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 71 Kotake & Koume's Theme — OptimusPike
+B4h7g3WNpg4  # 76 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 76 Inside Ganon's Castle — OptimusPike
+C6ZGXtCSBXU  # 79 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 79 Last Battle — OptimusPike
+V6tc6IEyum8  # 82 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 82 End Credits — OptimusPike
