@@ -1,4 +1,4 @@
-# Playlist: oot
+# Playlist: zelda
 # Theme: zelda
 # Music player playlist, shared between machines through git.
 # One YouTube video per line: a video ID or link, optionally followed by "# title — channel".
@@ -37,3 +37,12 @@ lo_XmOA3PyE  # 71 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 7
 B4h7g3WNpg4  # 76 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 76 Inside Ganon's Castle — OptimusPike
 C6ZGXtCSBXU  # 79 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 79 Last Battle — OptimusPike
 V6tc6IEyum8  # 82 - The Legend of Zelda: Ocarina of Time Complete Soundtrack - 82 End Credits — OptimusPike
+E-XXu8yku8g  # The Legend of Zelda: Majora's Mask - Title Theme — HyrulePostman
+q8B68U-CdTM  # The Legend of Zelda: Majora's Mask - Clock Tower — HyrulePostman
+f1SMd_JZufA  # The Legend of Zelda: Majora's Mask - Clock Town, First Day — HyrulePostman
+WQ2YfPTKR2E  # The Legend of Zelda: Majora's Mask - Milk Bar — HyrulePostman
+ksrXqSgLTwA  # The Legend of Zelda: Majora's Mask - Final Hours — HyrulePostman
+iofkq89Uzng  # The Legend of Zelda: Majora's Mask - Astral Observatory — HyrulePostman
+fNDLoncWz30  # Stone Tower Temple - Zelda Majora's Mask — Sheiky
+XDX4ZwUeOok  # Majora's Mask Song of Healing — Yacov B
+SiCOBlwJ9GY  # Song of Healing Reversed — Dylan Gidney
