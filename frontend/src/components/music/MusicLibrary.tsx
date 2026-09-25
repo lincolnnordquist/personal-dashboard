@@ -22,18 +22,21 @@ function errorMessage(err: unknown): string {
 }
 
 // MusicLibrary is a centered window for managing playlists: playlists on the left, the selected
-// playlist's songs on the right. Clicking a song plays it.
+// playlist's songs on the right. Clicking a playlist also selects it in the player (switching
+// the background to its theme), and clicking a song plays it.
 export default function MusicLibrary({
   playlists,
   initialPlaylistId,
   currentSongId,
   onPlay,
+  onSelectPlaylist,
   onClose,
 }: {
   playlists: Playlist[]
   initialPlaylistId: number | null
   currentSongId: number | null
   onPlay: (song: Song) => void
+  onSelectPlaylist: (id: number) => void
   onClose: () => void
 }) {
   const [selectedId, setSelectedId] = useState(initialPlaylistId)
@@ -61,7 +64,15 @@ export default function MusicLibrary({
           </button>
         </header>
         <div className="library-body">
-          <PlaylistSidebar playlists={playlists} selectedId={selected?.id ?? null} onSelect={setSelectedId} />
+          <PlaylistSidebar
+            playlists={playlists}
+            selectedId={selected?.id ?? null}
+            onSelect={(id) => {
+              setSelectedId(id)
+              onSelectPlaylist(id)
+            }}
+            onCreated={setSelectedId}
+          />
           {selected ? (
             <PlaylistPanel
               key={selected.id}
@@ -84,10 +95,13 @@ function PlaylistSidebar({
   playlists,
   selectedId,
   onSelect,
+  onCreated,
 }: {
   playlists: Playlist[]
   selectedId: number | null
   onSelect: (id: number) => void
+  // Called with a new playlist, which opens in the library without switching the player.
+  onCreated: (id: number) => void
 }) {
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState('')
@@ -102,7 +116,7 @@ function PlaylistSidebar({
       setName('')
       setCreating(false)
       setError(null)
-      if (data) onSelect(data.createPlaylist.id)
+      if (data) onCreated(data.createPlaylist.id)
     } catch (err) {
       setError(errorMessage(err))
     }

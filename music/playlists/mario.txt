@@ -5,3 +5,43 @@
 # The dashboard rewrites this file when songs are added or removed in the player, and picks
 # up changes made here (for example after a git pull) within a few seconds.
 
+DjxoyqL3ETU  # File Select 2 | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+9chsn7yWKPo  # Luma | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+mt1rrOo4m6k  # The Star Festival | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+73iWfOMWFM4  # Attack of the Airships | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+AzMBHAHRo6Q  # To the Gateway (Gateway Galaxy) | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+w1Q2tNb1yJg  # Enter the Galaxy | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+ECI36uheplg  # Egg Planet (Good Egg Galaxy) | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+FqZVLyv5Dqo  # Rosalina in the Observatory 1 | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+JYIFplxl7co  # Space Fantasy | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+scCgiF9tGb0  # The Honeyhive (Honeyhive Galaxy) | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+3UJxJRST0Qo  # Space Junk Road (Space Junk Galaxy) | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+bRVRLeVNFN8  # Speedy Comet | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+V1JQ-SjVGbo  # Battlerock Galaxy | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+OAC7doNhw08  # King Bowser | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+Pi3ezb6Qv_w  # Rosalina in the Observatory 2 | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+agYj9FDrLP4  # Beach Bowl Galaxy | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+7hDaOsv-GR4  # The Library | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+oMhSJe0z468  # Waltz of the Boos (Ghostly Galaxy) | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+9CR6Pt2Q9TE  # Buoy Base Galaxy | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+ifoVPXcgOb8  # Gusty Garden Galaxy | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+oT8Vk6fiwoI  # Ice Mountain - Freezeflame Galaxy | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+OlzA4gV1-vU  # Rosalina in the Observatory 3 | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+GJyLw8RaRM0  # The Galaxy Reactor | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+Gz2q9SQVulA  # Staff Roll - The Super Mario Galaxy Theme | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+ZsxCYVueQpk  # Family | Super Mario Galaxy - Original Soundtrack — InfinityCalamity
+Zqa2mgjbOIM  # Super Mario 64 Soundtrack - Dire, Dire Docks — RadiatorRampardos
+V1SdZyfXfOs  # Super Mario 64 Soundtrack - Pirahna Plant's Lullaby — RadiatorRampardos
+3WnQBZ6idbU  # Super Mario 64 Soundtrack - Bowser's Road — RadiatorRampardos
+Tu8N86Wq9yw  # Super Mario 64 Soundtrack - Ultimate Bowser — RadiatorRampardos
+QahtGBmWh7s  # Super Mario 64 Soundtrack - Piranha Plant's Lullaby (Piano) — RadiatorRampardos
+o-xRxXYpavU  # Super Mario 64 Soundtrack - Staff Roll — RadiatorRampardos
+uVCAnYTkyIo  # Delfino Plaza — Almepola VGM
+mYh6MSdsKj8  # Bianco Hills — Almepola VGM
+eQMri29IJEI  # Secret Course — Almepola VGM
+NiQn5OLNUrM  # Gelato Beach — Almepola VGM
+1YWLBZCxL8s  # Sky & Sea — Almepola VGM
+7uYv1pbjsYU  # Pinna Park — Almepola VGM
+6u2nrmzXn74  # Casino Delfino — Almepola VGM
+YQizGOYmk0k  # Noki Bay — Almepola VGM
+XBvzUquxeuc  # Deep Sea of Mare — Almepola VGM

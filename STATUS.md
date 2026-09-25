@@ -4,17 +4,16 @@ _Last updated: 2026-09-24 (desktop)_
 
 ## Current focus
 
-Nothing in progress. The music player is done; **focus mode** (backlog item 1) pairs naturally with it and is the suggested next step. Confirm with the user.
+Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 
 ## Backlog (in order)
 
-1. **Focus ("clear") mode.** A toggle button that hides everything except the video background, the floating music player, and a **large centered clock with the date**. For using the site as ambient music while focusing. Remember the choice across reloads (localStorage).
-2. **Twitch channels widget.** Glance-style list: avatar, name, live/offline, game and viewers when live. Goes in the left column under Docker. Needs a Twitch app (client ID + secret) for the Helix API.
-3. **GitHub releases widget.** Repo, latest version, and age, like Glance. Goes in the right column under Weather. Works without a token (60 req/hr); an optional token raises the limit.
-4. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
-5. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
-6. **Polish (spec step 8).**
-7. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
+1. **Twitch channels widget.** Glance-style list: avatar, name, live/offline, game and viewers when live. Goes in the left column under Docker. Needs a Twitch app (client ID + secret) for the Helix API.
+2. **GitHub releases widget.** Repo, latest version, and age, like Glance. Goes in the right column under Weather. Works without a token (60 req/hr); an optional token raises the limit.
+3. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
+4. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
+5. **Polish (spec step 8).**
+6. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
 
 ## Done
 
@@ -30,8 +29,9 @@ Nothing in progress. The music player is done; **focus mode** (backlog item 1) p
   - **Music library window** (☰ button): a centered window with playlists on the left (create) and the selected playlist's songs on the right (rename, delete with confirmation, add by pasting a YouTube link, remove, click a song to play it). Esc or the backdrop closes it.
   - **Seek bar** with elapsed/total time; it seeks on release, not while dragging.
   - Shuffle with no repeats per round; 5s crossfade at the end of a song, 1.5s on skip/back/click; volume remembered.
-  - **Background themes per playlist:** the library has a Background picker for each playlist ("Mix of all themes" or a theme folder). The dashboard background crossfades to the selected playlist's theme right away; no theme, or a theme folder missing on this machine, mixes videos from all themes.
+  - **Background themes per playlist:** the library has a Background picker for each playlist ("Mix of all themes" or a theme folder). Clicking a playlist in the library also selects it in the player (crossfading the music if playing), so the background switches to its theme and stays after closing; new playlists open in the library without switching the player. The dashboard background crossfades to the selected playlist's theme right away; no theme, or a theme folder missing on this machine, mixes videos from all themes.
   - **Playlists sync between machines as files in `music/playlists/`** (committed): see the decision below.
+- **Focus mode:** the round button in the top-right corner (or **F**; **Esc** leaves) fades the dashboard out, leaving the video background, the music player, and a large clock with the date. It's remembered in localStorage. After 3s without mouse movement the cursor and the toggle button hide; the music player always stays visible (YouTube requires it). Code: `frontend/src/components/FocusMode.tsx`, `useFocusMode.ts`.
 - **Look:** Glance-style three-column layout with labels above the cards; crossfading ambient video background, with **themes**: one folder of videos per theme in `backgrounds/` (currently `backgrounds/zelda/`, 24 MB, committed); translucent "glass" cards. The user added the search bar, greeting, and Zelda font themselves; keep them.
 
 ## Decisions and deviations from the spec
@@ -43,7 +43,7 @@ Nothing in progress. The music player is done; **focus mode** (backlog item 1) p
 - **YouTube:** the Data API key is sent in the `X-Goog-Api-Key` header, never in the URL. Shorts are detected as ≤180s, which also hides short trailers; that's why Nintendo was dropped as a sample. `channelIds` config accepts @handles or UC… IDs. Uses about 2 quota units per channel per hour.
 - **Music player:** uses the official YouTube IFrame API with two players that crossfade by ramping `setVolume`. YouTube requires the player to stay visible and at least 200×200, so the card shows a 340×200 video. Songs are checked at add time through YouTube's oEmbed endpoint (no key or quota; 401 means embedding is disabled), and playback errors 101/150 are skipped with a notice.
 - **Playlist sync:** `music/playlists/<slug>.txt`, one file per playlist, is the source of truth. The folder is bind-mounted into the backend (`PLAYLIST_DIR`). The first line `# Playlist: Name` holds the display name; the slug comes from the name and renaming a playlist renames its file. Any change in the UI rewrites the files. On startup, and within 5s of any change on disk (e.g. a `git pull`), the database is made to match the folder: playlists and songs are added, renamed, and removed. Files are hand-editable: one video ID or link per line, and bare IDs get their titles looked up. The backend writes as root but chowns files to the folder's owner. The old single `music/playlist.txt` was migrated to `playlists/zelda.txt` and deleted. Code: `backend/music/library.go`, `playlist.go`; DB in `backend/db/music.go`.
-- **Background themes:** `backgrounds/<theme>/*.mp4|.webm`, with optional `posters/<same-name>.jpg` stills (used for reduced motion). The folder is bind-mounted into nginx (served at `/backgrounds/`) and into the backend (read-only, `BACKGROUNDS_DIR`), so a new theme is just a new folder: no rebuild, and a page refresh picks it up. `backgroundThemes` lists them; a playlist's theme is saved as `# Theme: <folder>` in its playlist file (migration 5 adds `playlists.theme`). Code: `backend/backgrounds/`, `frontend/src/components/Background.tsx`.
+- **Background themes:** `backgrounds/<theme>/*.mp4|.webm`, with optional `posters/<same-name>.jpg` stills (used for reduced motion). The folder is bind-mounted into nginx (served at `/backgrounds/`) and into the backend (read-only, `BACKGROUNDS_DIR`), so a new theme is just a new folder: no rebuild, and a page refresh picks it up. **Run `scripts/optimize-backgrounds.sh` after adding clips**: it re-encodes to H.264 MP4 at ≤720p/≤30fps without audio (`--1080p` to keep full height), adds missing posters, and skips files that are already done. Measured in headless Chrome (software rendering, a worst case): the dashboard went from 57% to 29% of one core. Most of that came from replacing `filter: brightness()` on the video with a 15% black overlay; leave filters off the video element. The frosted-glass card blur costs about 13% more in that setup. `backgroundThemes` lists them; a playlist's theme is saved as `# Theme: <folder>` in its playlist file (migration 5 adds `playlists.theme`). Code: `backend/backgrounds/`, `frontend/src/components/Background.tsx`.
 - **Docker:** display only, never start/stop, because socket access is root-equivalent and the dashboard has no login.
 - **Widget config changes** currently go through the playground: `mutation { updateWidgetConfig(id: N, config: {...}) { config } }`. Use query variables for configs with empty lists; inline `[]` literals are stored as null.
 

@@ -128,12 +128,15 @@ export default function MusicPlayer({ onThemeChange }: { onThemeChange: (theme: 
     currentRef.current = null
   }
 
-  // switchPlaylist changes playlist from the picker. While music is playing it crossfades
-  // straight into a random song from the new playlist; otherwise it just shows one.
+  // switchPlaylist changes playlist from the picker or the library, which also switches the
+  // background to its theme. While music is playing it crossfades straight into a random song
+  // from the new playlist (or, if that playlist is empty, lets the current song finish);
+  // otherwise it just shows one.
   const switchPlaylist = (id: number) => {
+    if (id === playlist?.id) return
     selectPlaylist(id)
-    if (engine.playing && songsRef.current.length > 0) next(SKIP_FADE_MS)
-    else setCurrent(null)
+    if (!engine.playing) setCurrent(null)
+    else if (songsRef.current.length > 0) next(SKIP_FADE_MS)
   }
 
   // playFromLibrary plays a song picked in the library, switching to its playlist if needed.
@@ -163,6 +166,7 @@ export default function MusicPlayer({ onThemeChange }: { onThemeChange: (theme: 
           initialPlaylistId={playlist?.id ?? null}
           currentSongId={current?.id ?? null}
           onPlay={playFromLibrary}
+          onSelectPlaylist={switchPlaylist}
           onClose={() => setLibraryOpen(false)}
         />
       )}

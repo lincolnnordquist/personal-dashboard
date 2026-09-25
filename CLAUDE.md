@@ -20,7 +20,7 @@ This project is worked on from two machines (desktop and laptop). **STATUS.md is
 - Only the frontend publishes a port. nginx (`frontend/nginx.conf`) proxies `/graphql` and `/playground` to the backend; Postgres is reachable only inside Compose: `docker compose exec postgres psql -U dashboard`.
 - All services use `restart: unless-stopped` and Docker starts at boot, so the dashboard comes up automatically.
 - Secrets live in `.env` (gitignored); `.env.example` is the template.
-- Content folders are bind-mounted, not baked into images: `music/playlists/` (the backend reads and writes it) and `backgrounds/<theme>/` (served by nginx, read by the backend). Changes there need no rebuild.
+- Content folders are bind-mounted, not baked into images: `music/playlists/` (the backend reads and writes it) and `backgrounds/<theme>/` (served by nginx, read by the backend). Changes there need no rebuild. After adding background videos, run `scripts/optimize-backgrounds.sh`.
 - Backend: `cd backend && go vet ./... && go test ./...`. After editing `graph/schema.graphqls`, run `go tool gqlgen generate`.
 - Frontend: `cd frontend && npm run build && npx oxlint`. `npm run dev` serves on :5173 and proxies `/graphql` to a backend on :8080 (`go run .`).
 

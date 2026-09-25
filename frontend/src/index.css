@@ -573,20 +573,22 @@ body {
   opacity: 0;
   /* Keep in sync with FADE_SECONDS in Background.tsx. */
   transition: opacity 2.5s ease-in-out;
-  /* A slight dim keeps text readable over the brightest scenes. */
-  filter: brightness(0.85);
 }
 
 .background-media.visible {
   opacity: 1;
 }
 
-/* Light vignette so the edges fade into the page background. */
+/* Light vignette so the edges fade into the page background, plus a slight dim so text stays
+   readable over the brightest scenes. The dim is a 15% black layer rather than
+   filter: brightness(0.85) on the video: it looks identical but costs almost nothing, where
+   the filter re-processes every video frame (it roughly doubled the page's CPU use). */
 .background::after {
   content: '';
   position: absolute;
   inset: 0;
   background:
+    linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
     radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(15, 17, 21, 0.55) 100%),
     linear-gradient(to bottom, rgba(15, 17, 21, 0.35), transparent 15%, transparent 80%, rgba(15, 17, 21, 0.5));
 }
@@ -1229,4 +1231,101 @@ body {
 
 .song-channel {
   font-size: 0.75rem;
+}
+
+/* Focus mode: the dashboard fades away, leaving the background, the music player, and a clock. */
+.app {
+  transition:
+    opacity 0.6s ease,
+    visibility 0.6s;
+}
+
+.focus-mode .app {
+  opacity: 0;
+  /* visibility (not just opacity) stops painting it, so the hidden cards' blur costs nothing. */
+  visibility: hidden;
+}
+
+/* The hidden dashboard still takes up height; don't let the page scroll in focus mode. */
+html:has(.focus-mode) {
+  overflow: hidden;
+}
+
+.focus-clock {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+  animation: focus-fade-in 0.8s ease;
+}
+
+.focus-time {
+  font-size: clamp(4rem, 13vw, 10rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.focus-date {
+  margin-top: 12px;
+  font-family: 'Zelda', var(--font-body, system-ui);
+  font-size: clamp(1.1rem, 2.4vw, 1.6rem);
+  letter-spacing: 0.04em;
+  color: rgba(230, 232, 236, 0.85);
+}
+
+@keyframes focus-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.focus-toggle {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  right: 16px;
+  z-index: 15;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: var(--text);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  transition: opacity 0.6s ease;
+}
+
+.focus-toggle:hover {
+  background: rgba(40, 44, 54, 0.85);
+}
+
+/* After a few seconds without mouse movement in focus mode, hide the cursor and the toggle.
+   The music player stays: YouTube requires its player to remain visible. */
+.focus-idle,
+.focus-idle * {
+  cursor: none !important;
+}
+
+.focus-idle .focus-toggle {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app,
+  .focus-toggle {
+    transition: none;
+  }
+
+  .focus-clock {
+    animation: none;
+  }
 }

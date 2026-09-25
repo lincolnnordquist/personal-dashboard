@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@apollo/client/react'
 import { GET_BACKGROUND_THEMES, GET_WIDGETS } from './graphql/queries'
 import Background, { type Scene } from './components/Background'
+import { FocusClock, FocusToggle } from './components/FocusMode'
+import { useFocusMode } from './components/useFocusMode'
 import Grid from './components/Grid'
 import MusicPlayer from './components/music/MusicPlayer'
 import SearchBar from './components/SearchBar'
@@ -22,10 +24,14 @@ export default function App() {
     return (chosen.length > 0 ? chosen : themes).flatMap((t) => t.videos)
   }, [themeData, theme])
 
+  const focus = useFocusMode()
+  const modeClass = [focus.focused && 'focus-mode', focus.idle && 'focus-idle'].filter(Boolean).join(' ')
+
   return (
-    <>
+    <div className={modeClass || undefined}>
       <Background scenes={scenes} />
-      <main className="app">
+      {/* Hidden in focus mode; inert keeps its links and inputs out of the tab order. */}
+      <main className="app" inert={focus.focused}>
         <SearchBar />
         <header className="app-header">
           <h1 className="greeting">{greeting('Lincoln')}</h1>
@@ -34,7 +40,9 @@ export default function App() {
         {error && <p className="error">Could not load widgets: {error.message}</p>}
         {data && <Grid widgets={data.widgets.filter((w) => w.enabled)} />}
       </main>
+      {focus.focused && <FocusClock />}
+      <FocusToggle focused={focus.focused} onToggle={focus.toggle} />
       <MusicPlayer onThemeChange={setTheme} />
-    </>
+    </div>
   )
 }
