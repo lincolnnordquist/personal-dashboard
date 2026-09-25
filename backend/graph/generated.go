@@ -5,6 +5,7 @@ package graph
 import (
 	"bytes"
 	"context"
+	"dashboard/backgrounds"
 	"dashboard/db"
 	"dashboard/graph/model"
 	"dashboard/widgets"
@@ -39,6 +40,17 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	BackgroundTheme struct {
+		Name   func(childComplexity int) int
+		Videos func(childComplexity int) int
+	}
+
+	BackgroundVideo struct {
+		Name      func(childComplexity int) int
+		PosterURL func(childComplexity int) int
+		URL       func(childComplexity int) int
+	}
+
 	DockerContainer struct {
 		Health     func(childComplexity int) int
 		ID         func(childComplexity int) int
@@ -76,6 +88,7 @@ type ComplexityRoot struct {
 		DeletePlaylist     func(childComplexity int, id int) int
 		RemoveSong         func(childComplexity int, id int) int
 		RenamePlaylist     func(childComplexity int, id int, name string) int
+		SetPlaylistTheme   func(childComplexity int, id int, theme *string) int
 		ToggleWidget       func(childComplexity int, id int, enabled bool) int
 		UpdateWidgetConfig func(childComplexity int, id int, config map[string]any, position *int) int
 	}
@@ -84,18 +97,20 @@ type ComplexityRoot struct {
 		ID    func(childComplexity int) int
 		Name  func(childComplexity int) int
 		Songs func(childComplexity int) int
+		Theme func(childComplexity int) int
 	}
 
 	Query struct {
-		DockerData   func(childComplexity int) int
-		Playlists    func(childComplexity int) int
-		RedditData   func(childComplexity int, subreddits []string) int
-		SportsData   func(childComplexity int, sport string, teamIds []string) int
-		Standings    func(childComplexity int, sport string) int
-		TeamSchedule func(childComplexity int, sport string, teamID string) int
-		WeatherData  func(childComplexity int, lat float64, lon float64, unit *model.TemperatureUnit, location *string) int
-		Widgets      func(childComplexity int) int
-		YoutubeData  func(childComplexity int, channelIds []string) int
+		BackgroundThemes func(childComplexity int) int
+		DockerData       func(childComplexity int) int
+		Playlists        func(childComplexity int) int
+		RedditData       func(childComplexity int, subreddits []string) int
+		SportsData       func(childComplexity int, sport string, teamIds []string) int
+		Standings        func(childComplexity int, sport string) int
+		TeamSchedule     func(childComplexity int, sport string, teamID string) int
+		WeatherData      func(childComplexity int, lat float64, lon float64, unit *model.TemperatureUnit, location *string) int
+		Widgets          func(childComplexity int) int
+		YoutubeData      func(childComplexity int, channelIds []string) int
 	}
 
 	RedditPost struct {
@@ -211,6 +226,7 @@ type MutationResolver interface {
 	ToggleWidget(ctx context.Context, id int, enabled bool) (*db.WidgetConfig, error)
 	CreatePlaylist(ctx context.Context, name string) (*db.Playlist, error)
 	RenamePlaylist(ctx context.Context, id int, name string) (*db.Playlist, error)
+	SetPlaylistTheme(ctx context.Context, id int, theme *string) (*db.Playlist, error)
 	DeletePlaylist(ctx context.Context, id int) (bool, error)
 	AddSong(ctx context.Context, playlistID int, url string) (*db.Song, error)
 	RemoveSong(ctx context.Context, id int) (bool, error)
@@ -225,6 +241,7 @@ type QueryResolver interface {
 	YoutubeData(ctx context.Context, channelIds []string) ([]*widgets.YoutubeChannel, error)
 	DockerData(ctx context.Context) ([]*widgets.DockerContainer, error)
 	Playlists(ctx context.Context) ([]*db.Playlist, error)
+	BackgroundThemes(ctx context.Context) ([]*backgrounds.BackgroundTheme, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -244,6 +261,38 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	ec := newExecutionContext(nil, e, nil)
 	_ = ec
 	switch typeName + "." + field {
+
+	case "BackgroundTheme.name":
+		if e.ComplexityRoot.BackgroundTheme.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BackgroundTheme.Name(childComplexity), true
+	case "BackgroundTheme.videos":
+		if e.ComplexityRoot.BackgroundTheme.Videos == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BackgroundTheme.Videos(childComplexity), true
+
+	case "BackgroundVideo.name":
+		if e.ComplexityRoot.BackgroundVideo.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BackgroundVideo.Name(childComplexity), true
+	case "BackgroundVideo.posterUrl":
+		if e.ComplexityRoot.BackgroundVideo.PosterURL == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BackgroundVideo.PosterURL(childComplexity), true
+	case "BackgroundVideo.url":
+		if e.ComplexityRoot.BackgroundVideo.URL == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BackgroundVideo.URL(childComplexity), true
 
 	case "DockerContainer.health":
 		if e.ComplexityRoot.DockerContainer.Health == nil {
@@ -435,6 +484,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RenamePlaylist(childComplexity, args["id"].(int), args["name"].(string)), true
+	case "Mutation.setPlaylistTheme":
+		if e.ComplexityRoot.Mutation.SetPlaylistTheme == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_setPlaylistTheme_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SetPlaylistTheme(childComplexity, args["id"].(int), args["theme"].(*string)), true
 	case "Mutation.toggleWidget":
 		if e.ComplexityRoot.Mutation.ToggleWidget == nil {
 			break
@@ -476,7 +536,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Playlist.Songs(childComplexity), true
+	case "Playlist.theme":
+		if e.ComplexityRoot.Playlist.Theme == nil {
+			break
+		}
 
+		return e.ComplexityRoot.Playlist.Theme(childComplexity), true
+
+	case "Query.backgroundThemes":
+		if e.ComplexityRoot.Query.BackgroundThemes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.BackgroundThemes(childComplexity), true
 	case "Query.dockerData":
 		if e.ComplexityRoot.Query.DockerData == nil {
 			break
@@ -1061,6 +1133,28 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // Each function is generated once per unique object type, deduplicating the
 // switch statements that were previously inlined in every fieldContext_* function.
 
+func (ec *executionContext) childFields_BackgroundTheme(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "name":
+		return ec.fieldContext_BackgroundTheme_name(ctx, field)
+	case "videos":
+		return ec.fieldContext_BackgroundTheme_videos(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type BackgroundTheme", field.Name)
+}
+
+func (ec *executionContext) childFields_BackgroundVideo(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "name":
+		return ec.fieldContext_BackgroundVideo_name(ctx, field)
+	case "url":
+		return ec.fieldContext_BackgroundVideo_url(ctx, field)
+	case "posterUrl":
+		return ec.fieldContext_BackgroundVideo_posterUrl(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type BackgroundVideo", field.Name)
+}
+
 func (ec *executionContext) childFields_DockerContainer(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "id":
@@ -1129,6 +1223,8 @@ func (ec *executionContext) childFields_Playlist(ctx context.Context, field grap
 		return ec.fieldContext_Playlist_id(ctx, field)
 	case "name":
 		return ec.fieldContext_Playlist_name(ctx, field)
+	case "theme":
+		return ec.fieldContext_Playlist_theme(ctx, field)
 	case "songs":
 		return ec.fieldContext_Playlist_songs(ctx, field)
 	}
@@ -1543,6 +1639,28 @@ func (ec *executionContext) field_Mutation_renamePlaylist_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_setPlaylistTheme_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (int, error) {
+			return ec.unmarshalNInt2int(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "theme",
+		func(ctx context.Context, v any) (*string, error) {
+			return ec.unmarshalOString2ᚖstring(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["theme"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_toggleWidget_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1792,6 +1910,130 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ***************************** args.gotpl *****************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _BackgroundTheme_name(ctx context.Context, field graphql.CollectedField, obj *backgrounds.BackgroundTheme) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_BackgroundTheme_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_BackgroundTheme_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("BackgroundTheme", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _BackgroundTheme_videos(ctx context.Context, field graphql.CollectedField, obj *backgrounds.BackgroundTheme) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_BackgroundTheme_videos(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Videos, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*backgrounds.BackgroundVideo) graphql.Marshaler {
+			return ec.marshalNBackgroundVideo2ᚕᚖdashboardᚋbackgroundsᚐBackgroundVideoᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_BackgroundTheme_videos(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BackgroundTheme",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_BackgroundVideo(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BackgroundVideo_name(ctx context.Context, field graphql.CollectedField, obj *backgrounds.BackgroundVideo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_BackgroundVideo_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_BackgroundVideo_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("BackgroundVideo", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _BackgroundVideo_url(ctx context.Context, field graphql.CollectedField, obj *backgrounds.BackgroundVideo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_BackgroundVideo_url(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.URL, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_BackgroundVideo_url(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("BackgroundVideo", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _BackgroundVideo_posterUrl(ctx context.Context, field graphql.CollectedField, obj *backgrounds.BackgroundVideo) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_BackgroundVideo_posterUrl(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PosterURL, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_BackgroundVideo_posterUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("BackgroundVideo", field, false, false, errors.New("field of type String does not have child fields"))
+}
 
 func (ec *executionContext) _DockerContainer_id(ctx context.Context, field graphql.CollectedField, obj *widgets.DockerContainer) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
@@ -2502,6 +2744,50 @@ func (ec *executionContext) fieldContext_Mutation_renamePlaylist(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_setPlaylistTheme(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_setPlaylistTheme(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().SetPlaylistTheme(ctx, fc.Args["id"].(int), fc.Args["theme"].(*string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *db.Playlist) graphql.Marshaler {
+			return ec.marshalNPlaylist2ᚖdashboardᚋdbᚐPlaylist(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_setPlaylistTheme(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Playlist(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_setPlaylistTheme_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_deletePlaylist(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2677,6 +2963,29 @@ func (ec *executionContext) _Playlist_name(ctx context.Context, field graphql.Co
 	)
 }
 func (ec *executionContext) fieldContext_Playlist_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Playlist", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Playlist_theme(ctx context.Context, field graphql.CollectedField, obj *db.Playlist) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Playlist_theme(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Theme, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Playlist_theme(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Playlist", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
@@ -3067,6 +3376,38 @@ func (ec *executionContext) fieldContext_Query_playlists(_ context.Context, fiel
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Playlist(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_backgroundThemes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_backgroundThemes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().BackgroundThemes(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*backgrounds.BackgroundTheme) graphql.Marshaler {
+			return ec.marshalNBackgroundTheme2ᚕᚖdashboardᚋbackgroundsᚐBackgroundThemeᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_backgroundThemes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_BackgroundTheme(ctx, field)
 		},
 	}
 	return fc, nil
@@ -5777,6 +6118,97 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** object.gotpl ****************************
 
+var backgroundThemeImplementors = []string{"BackgroundTheme"}
+
+func (ec *executionContext) _BackgroundTheme(ctx context.Context, sel ast.SelectionSet, obj *backgrounds.BackgroundTheme) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, backgroundThemeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BackgroundTheme")
+		case "name":
+			out.Values[i] = ec._BackgroundTheme_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "videos":
+			out.Values[i] = ec._BackgroundTheme_videos(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var backgroundVideoImplementors = []string{"BackgroundVideo"}
+
+func (ec *executionContext) _BackgroundVideo(ctx context.Context, sel ast.SelectionSet, obj *backgrounds.BackgroundVideo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, backgroundVideoImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BackgroundVideo")
+		case "name":
+			out.Values[i] = ec._BackgroundVideo_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "url":
+			out.Values[i] = ec._BackgroundVideo_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "posterUrl":
+			out.Values[i] = ec._BackgroundVideo_posterUrl(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
 var dockerContainerImplementors = []string{"DockerContainer"}
 
 func (ec *executionContext) _DockerContainer(ctx context.Context, sel ast.SelectionSet, obj *widgets.DockerContainer) graphql.Marshaler {
@@ -6034,6 +6466,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "setPlaylistTheme":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_setPlaylistTheme(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "deletePlaylist":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deletePlaylist(ctx, field)
@@ -6096,6 +6535,11 @@ func (ec *executionContext) _Playlist(ctx context.Context, sel ast.SelectionSet,
 		case "name":
 			out.Values[i] = ec._Playlist_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "theme":
+			out.Values[i] = ec._Playlist_theme(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
 		case "songs":
@@ -6330,6 +6774,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_playlists(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "backgroundThemes":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_backgroundThemes(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -7517,6 +7983,58 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNBackgroundTheme2ᚕᚖdashboardᚋbackgroundsᚐBackgroundThemeᚄ(ctx context.Context, sel ast.SelectionSet, v []*backgrounds.BackgroundTheme) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNBackgroundTheme2ᚖdashboardᚋbackgroundsᚐBackgroundTheme(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNBackgroundTheme2ᚖdashboardᚋbackgroundsᚐBackgroundTheme(ctx context.Context, sel ast.SelectionSet, v *backgrounds.BackgroundTheme) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._BackgroundTheme(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNBackgroundVideo2ᚕᚖdashboardᚋbackgroundsᚐBackgroundVideoᚄ(ctx context.Context, sel ast.SelectionSet, v []*backgrounds.BackgroundVideo) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNBackgroundVideo2ᚖdashboardᚋbackgroundsᚐBackgroundVideo(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNBackgroundVideo2ᚖdashboardᚋbackgroundsᚐBackgroundVideo(ctx context.Context, sel ast.SelectionSet, v *backgrounds.BackgroundVideo) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._BackgroundVideo(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)

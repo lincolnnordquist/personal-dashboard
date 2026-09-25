@@ -74,15 +74,16 @@ func main() {
 	go every(ctx, widgets.YouTubeTTL, refreshYouTube(repo, store, youtube))
 
 	resolver := &graph.Resolver{
-		WidgetRepo: repo,
-		Music:      library,
-		Cache:      store,
-		Weather:    weather,
-		Reddit:     reddit,
-		Sports:     sports,
-		YouTube:    youtube,
-		Docker:     docker,
-		Now:        time.Now,
+		WidgetRepo:     repo,
+		Music:          library,
+		BackgroundsDir: cfg.BackgroundsDir,
+		Cache:          store,
+		Weather:        weather,
+		Reddit:         reddit,
+		Sports:         sports,
+		YouTube:        youtube,
+		Docker:         docker,
+		Now:            time.Now,
 	}
 	gql := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 	gql.AddTransport(transport.GET{})

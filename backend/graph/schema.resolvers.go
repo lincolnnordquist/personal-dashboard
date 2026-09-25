@@ -7,6 +7,7 @@ package graph
 
 import (
 	"context"
+	"dashboard/backgrounds"
 	"dashboard/db"
 	"dashboard/graph/model"
 	"dashboard/widgets"
@@ -44,6 +45,26 @@ func (r *mutationResolver) CreatePlaylist(ctx context.Context, name string) (*db
 // RenamePlaylist is the resolver for the renamePlaylist field.
 func (r *mutationResolver) RenamePlaylist(ctx context.Context, id int, name string) (*db.Playlist, error) {
 	p, err := r.Music.RenamePlaylist(ctx, id, name)
+	if errors.Is(err, db.ErrNotFound) {
+		return nil, fmt.Errorf("playlist %d not found", id)
+	}
+	return p, err
+}
+
+// SetPlaylistTheme is the resolver for the setPlaylistTheme field.
+func (r *mutationResolver) SetPlaylistTheme(ctx context.Context, id int, theme *string) (*db.Playlist, error) {
+	name := ""
+	if theme != nil {
+		name = *theme
+		ok, err := backgrounds.Exists(r.BackgroundsDir, name)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			return nil, fmt.Errorf("no background theme named %q", name)
+		}
+	}
+	p, err := r.Music.SetTheme(ctx, id, name)
 	if errors.Is(err, db.ErrNotFound) {
 		return nil, fmt.Errorf("playlist %d not found", id)
 	}
@@ -186,6 +207,14 @@ func (r *queryResolver) DockerData(ctx context.Context) ([]*widgets.DockerContai
 // Playlists is the resolver for the playlists field.
 func (r *queryResolver) Playlists(ctx context.Context) ([]*db.Playlist, error) {
 	return r.Music.Playlists(ctx)
+}
+
+// BackgroundThemes is the resolver for the backgroundThemes field.
+func (r *queryResolver) BackgroundThemes(ctx context.Context) ([]*backgrounds.BackgroundTheme, error) {
+	if r.BackgroundsDir == "" {
+		return []*backgrounds.BackgroundTheme{}, nil
+	}
+	return backgrounds.List(r.BackgroundsDir, "/backgrounds")
 }
 
 // Mutation returns MutationResolver implementation.

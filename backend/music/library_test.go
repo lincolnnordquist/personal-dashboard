@@ -64,6 +64,15 @@ func (f *fakeStore) UpdatePlaylist(_ context.Context, id int, slug, name string)
 	return nil
 }
 
+func (f *fakeStore) SetPlaylistTheme(_ context.Context, id int, theme *string) error {
+	p := f.get(id)
+	if p == nil {
+		return db.ErrNotFound
+	}
+	p.Theme = theme
+	return nil
+}
+
 func (f *fakeStore) DeletePlaylist(_ context.Context, id int) error {
 	for i, p := range f.playlists {
 		if p.ID == id {
@@ -136,13 +145,13 @@ func writeFile(t *testing.T, path, content string) {
 	require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
 }
 
-func readPlaylist(t *testing.T, path string) (string, []Entry) {
+func readPlaylist(t *testing.T, path string) (Header, []Entry) {
 	t.Helper()
 	f, err := os.Open(path)
 	require.NoError(t, err)
 	defer f.Close()
-	name, entries, _ := ParsePlaylist(f)
-	return name, entries
+	header, entries, _ := ParsePlaylist(f)
+	return header, entries
 }
 
 func listDir(t *testing.T, dir string) []string {
@@ -158,6 +167,7 @@ func listDir(t *testing.T, dir string) []string {
 
 func TestParseAndFormatPlaylist(t *testing.T) {
 	in := `# Playlist: Zelda Chill
+# Theme: zelda
 # a comment
 aaaaaaaaaaa  # Lost Woods — Zelda Fan
 
@@ -165,21 +175,22 @@ https://youtu.be/bbbbbbbbbbb
 not a video
 aaaaaaaaaaa  # duplicate line
 `
-	name, entries, problems := ParsePlaylist(strings.NewReader(in))
-	assert.Equal(t, "Zelda Chill", name)
+	header, entries, problems := ParsePlaylist(strings.NewReader(in))
+	assert.Equal(t, Header{Name: "Zelda Chill", Theme: "zelda"}, header)
 	assert.Equal(t, []Entry{
 		{VideoID: "aaaaaaaaaaa", Title: "Lost Woods", ChannelName: "Zelda Fan"},
 		{VideoID: "bbbbbbbbbbb"},
 	}, entries)
-	assert.Equal(t, []string{"line 6: not a YouTube video link"}, problems)
+	assert.Equal(t, []string{"line 7: not a YouTube video link"}, problems)
 
-	out := FormatPlaylist("Boss\nThemes", []Entry{
+	out := FormatPlaylist(Header{Name: "Boss\nThemes"}, []Entry{
 		{VideoID: "aaaaaaaaaaa", Title: "Lost Woods", ChannelName: "Zelda Fan"},
 		{VideoID: "ccccccccccc", Title: "Gerudo\nValley", ChannelName: "Other Fan"},
 	})
-	name, again, problems := ParsePlaylist(strings.NewReader(string(out)))
+	header, again, problems := ParsePlaylist(strings.NewReader(string(out)))
 	assert.Empty(t, problems)
-	assert.Equal(t, "Boss Themes", name, "newlines can't break the format")
+	assert.Equal(t, Header{Name: "Boss Themes"}, header, "newlines can't break the format; no theme line without a theme")
+	assert.NotContains(t, string(out), themePrefix)
 	assert.Equal(t, []Entry{
 		{VideoID: "aaaaaaaaaaa", Title: "Lost Woods", ChannelName: "Zelda Fan"},
 		{VideoID: "ccccccccccc", Title: "Gerudo Valley", ChannelName: "Other Fan"},
@@ -212,8 +223,8 @@ func TestSyncCreatesFolderFromDatabase(t *testing.T) {
 
 	require.NoError(t, lib.Sync(context.Background()))
 
-	name, entries := readPlaylist(t, filepath.Join(dir, "zelda.txt"))
-	assert.Equal(t, "Zelda", name)
+	header, entries := readPlaylist(t, filepath.Join(dir, "zelda.txt"))
+	assert.Equal(t, "Zelda", header.Name)
 	assert.Equal(t, []Entry{{VideoID: "aaaaaaaaaaa", Title: "Lost Woods", ChannelName: "Zelda Fan"}}, entries)
 	assert.NoFileExists(t, legacy, "the old single playlist file is removed once migrated")
 	assert.Equal(t, "zelda(Zelda): aaaaaaaaaaa", store.summary())
@@ -228,8 +239,8 @@ func TestSyncMakesDatabaseMatchFolder(t *testing.T) {
 	store.AddSong(ctx, zelda.ID, "bbbbbbbbbbb", "Kakariko Village", "Zelda Fan", "")
 	store.CreatePlaylist(ctx, "old", "Old")
 
-	// What another machine pushed: zelda renamed and edited, "old" deleted, "boss" added.
-	writeFile(t, filepath.Join(dir, "zelda.txt"), "# Playlist: Zelda Chill\nbbbbbbbbbbb  # Kakariko Village — Zelda Fan\nccccccccccc\n")
+	// What another machine pushed: zelda renamed, themed, and edited, "old" deleted, "boss" added.
+	writeFile(t, filepath.Join(dir, "zelda.txt"), "# Playlist: Zelda Chill\n# Theme: zelda\nbbbbbbbbbbb  # Kakariko Village — Zelda Fan\nccccccccccc\n")
 	writeFile(t, filepath.Join(dir, "boss.txt"), "aaaaaaaaaaa  # Lost Woods — Zelda Fan\n")
 	writeFile(t, filepath.Join(dir, "Bad Name.txt"), "aaaaaaaaaaa\n")
 
@@ -239,6 +250,8 @@ func TestSyncMakesDatabaseMatchFolder(t *testing.T) {
 	assert.Equal(t, "boss(boss): aaaaaaaaaaa; zelda(Zelda Chill): bbbbbbbbbbb,ccccccccccc", store.summary(),
 		"files without a name line use their slug; bad file names are ignored")
 	assert.Equal(t, "Gerudo Valley", store.get(zelda.ID).Songs[1].Title, "bare IDs get their title looked up")
+	require.NotNil(t, store.get(zelda.ID).Theme)
+	assert.Equal(t, "zelda", *store.get(zelda.ID).Theme)
 }
 
 func TestPlaylistEditsUpdateFiles(t *testing.T) {
@@ -265,6 +278,15 @@ func TestPlaylistEditsUpdateFiles(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "boss-themes", renamed.Slug)
 	assert.ElementsMatch(t, []string{"zelda-chill.txt", "boss-themes.txt"}, listDir(t, dir), "renaming renames the file")
+
+	themed, err := lib.SetTheme(ctx, chill.ID, "zelda")
+	require.NoError(t, err)
+	assert.Equal(t, "zelda", *themed.Theme)
+	header, _ := readPlaylist(t, filepath.Join(dir, "zelda-chill.txt"))
+	assert.Equal(t, Header{Name: "Zelda Chill", Theme: "zelda"}, header)
+	cleared, err := lib.SetTheme(ctx, chill.ID, "")
+	require.NoError(t, err)
+	assert.Nil(t, cleared.Theme, "an empty theme mixes all themes")
 
 	require.NoError(t, lib.RemoveSong(ctx, song.ID))
 	_, entries := readPlaylist(t, filepath.Join(dir, "zelda-chill.txt"))

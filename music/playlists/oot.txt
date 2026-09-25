@@ -1,4 +1,5 @@
 # Playlist: oot
+# Theme: zelda
 # Music player playlist, shared between machines through git.
 # One YouTube video per line: a video ID or link, optionally followed by "# title — channel".
 # The dashboard rewrites this file when songs are added or removed in the player, and picks

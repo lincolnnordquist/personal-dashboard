@@ -1,0 +1,46 @@
+# Playlist: paper mario
+# Theme: paper-mario
+# Music player playlist, shared between machines through git.
+# One YouTube video per line: a video ID or link, optionally followed by "# title — channel".
+# The dashboard rewrites this file when songs are added or removed in the player, and picks
+# up changes made here (for example after a git pull) within a few seconds.
+
+CzECwEbXBJE  # Intro Story - Paper Mario The Thousand Year Door — GilvaSunner Archive
+-qXwksNsAQs  # All Aboard to Rogueport Paper Mario The Thousand Year Door — GilvaSunner Archive
+2evKC43wLxU  # Battle Theme Paper Mario The Thousand Year Door — GilvaSunner Archive
+bA9zpy8ZNxU  # Boggly Woods Paper Mario The Thousand Year Door — GilvaSunner Archive
+zX9TuotjeIU  # Farewell Rogueport Paper Mario The Thousand Year Door — GilvaSunner Archive
+_JRHtfxMmc4  # Excess Express at Night Paper Mario The Thousand Year Door — GilvaSunner Archive
+_n4O-9VWQVE  # Excess Express at Dusk Paper Mario The Thousand Year Door — GilvaSunner Archive
+Dxbi5tctlA0  # Excess Express at Day Paper Mario The Thousand Year Door — GilvaSunner Archive
+crAih5R9a1M  # Entering Hooktail's Castle Paper Mario The Thousand Year Door — GilvaSunner Archive
+r6ka8gvV8ic  # Doopliss Battle Paper Mario The Thousand Year Door — GilvaSunner Archive
+F_DAHv8pch0  # Detective Pennington Paper Mario The Thousand Year Door — GilvaSunner Archive
+cBqqfWzwaPM  # Creepy Steeple Paper Mario The Thousand Year Door — GilvaSunner Archive
+s-cdk8M0l7w  # Pianta Parlor Paper Mario The Thousand Year Door — GilvaSunner Archive
+voWf5PNNw-c  # Peach and the Mysterious Map Paper Mario The Thousand Year Door — GilvaSunner Archive
+9i-m1xiQXoQ  # Luigi's Theme Paper Mario The Thousand Year Door — GilvaSunner Archive
+KpyBPJLo2BI  # Lord Crump's Theme Paper Mario The Thousand Year Door — GilvaSunner Archive
+koxlrilUyao  # Keelhaul Key Paper Mario The Thousand Year Door — GilvaSunner Archive
+_I2ACQAYYzI  # Hooktail's Castle Paper Mario The Thousand Year Door — GilvaSunner Archive
+RmcMEAbSk4s  # Macho Grubba Battle Paper Mario The Thousand Year Door — GilvaSunner Archive
+pqdLfhk-lsw  # Grubba's Theme Paper Mario The Thousand Year Door — GilvaSunner Archive
+_twvNl7Q2WM  # Grodus Battle Paper Mario The Thousand Year Door — GilvaSunner Archive
+U2vd2Inl8kU  # Glitzville Paper Mario The Thousand Year Door — GilvaSunner Archive
+pxnwMSrXx3w  # Glitz Pit Mysteries Paper Mario The Thousand Year Door — GilvaSunner Archive
+etwXNJ1zBvE  # Final Battle Paper Mario The Thousand Year Door — GilvaSunner Archive
+UOHsonWAzus  # Riverside Station Paper Mario The Thousand Year Door — GilvaSunner Archive
+-OeCDzRNgDA  # Pirate's Grotto Paper Mario The Thousand Year Door — GilvaSunner Archive
+8RawTLAR4KU  # Poshley Heights Paper Mario The Thousand Year Door — GilvaSunner Archive
+hUA3Ue9sElQ  # Poshley Sanctum Paper Mario The Thousand Year Door — GilvaSunner Archive
+nXBWhgyGvXQ  # Professor Frankly Paper Mario The Thousand Year Door — GilvaSunner Archive
+kznbVzMOms8  # Rawk Hawk Battle Paper Mario The Thousand Year Door — GilvaSunner Archive
+JBZoIkNANHs  # Shadow Sirens Paper Mario The Thousand Year Door — GilvaSunner Archive
+NK4AaWCeJqU  # Ruins of the Thousand Year Door Paper Mario The Thousand Year Door — GilvaSunner Archive
+rfvpEOROQo8  # X Naut Fortress Paper Mario The Thousand Year Door — GilvaSunner Archive
+UItpDo5BCnc  # We're Counting on You, Mario! Paper Mario The Thousand Year Door — GilvaSunner Archive
+K8kfRvxaK1U  # Twilight Town Paper Mario The Thousand Year Door — GilvaSunner Archive
+Gv78bRtqaJ4  # The Great Boggly Tree Paper Mario The Thousand Year Door — GilvaSunner Archive
+dWFkzPEKqXg  # Rogueport Sewers Paper Mario The Thousand Year Door — GilvaSunner Archive
+vorb8NGdGnc  # Rogueport Paper Mario The Thousand Year Door — GilvaSunner Archive
+kB8i72J9juw  # (N64) Paper Mario OST - Shooting Star Summit — Tiwill

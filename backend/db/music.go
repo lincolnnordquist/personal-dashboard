@@ -16,6 +16,7 @@ type Playlist struct {
 	ID    int
 	Slug  string
 	Name  string
+	Theme *string // background theme folder; nil mixes all themes
 	Songs []*Song
 }
 
@@ -43,13 +44,13 @@ func NewMusicRepo(pool *pgxpool.Pool) *MusicRepo {
 // ListPlaylists returns every playlist with its songs, playlists by name and songs in the
 // order they were added.
 func (r *MusicRepo) ListPlaylists(ctx context.Context) ([]*Playlist, error) {
-	rows, err := r.pool.Query(ctx, `SELECT id, slug, name FROM playlists ORDER BY LOWER(name), id`)
+	rows, err := r.pool.Query(ctx, `SELECT id, slug, name, theme FROM playlists ORDER BY LOWER(name), id`)
 	if err != nil {
 		return nil, err
 	}
 	playlists, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*Playlist, error) {
 		p := &Playlist{Songs: []*Song{}}
-		return p, row.Scan(&p.ID, &p.Slug, &p.Name)
+		return p, row.Scan(&p.ID, &p.Slug, &p.Name, &p.Theme)
 	})
 	if err != nil {
 		return nil, err
@@ -91,6 +92,15 @@ func (r *MusicRepo) UpdatePlaylist(ctx context.Context, id int, slug, name strin
 	if isUniqueViolation(err) {
 		return ErrDuplicate
 	}
+	if err == nil && tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return err
+}
+
+// SetPlaylistTheme sets a playlist's background theme; nil mixes all themes.
+func (r *MusicRepo) SetPlaylistTheme(ctx context.Context, id int, theme *string) error {
+	tag, err := r.pool.Exec(ctx, `UPDATE playlists SET theme = $2 WHERE id = $1`, id, theme)
 	if err == nil && tag.RowsAffected() == 0 {
 		return ErrNotFound
 	}

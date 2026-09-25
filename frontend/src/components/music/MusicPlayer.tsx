@@ -23,8 +23,8 @@ function describeError(code: number): string {
  * shuffling without repeats until every song has played, and crossfades between songs.
  * YouTube requires the player to stay visible, so the current video shows at the top.
  */
-export default function MusicPlayer() {
-  const { data } = useQuery(GET_PLAYLISTS)
+export default function MusicPlayer({ onThemeChange }: { onThemeChange: (theme: string | null) => void }) {
+  const { data, loading } = useQuery(GET_PLAYLISTS)
   const playlists = data?.playlists ?? []
 
   const [current, setCurrent] = useState<Song | null>(null)
@@ -37,6 +37,12 @@ export default function MusicPlayer() {
     playlists[0] ??
     null
   const songs = playlist?.songs ?? []
+
+  // Let the dashboard switch backgrounds to the selected playlist's theme.
+  const theme = playlist?.theme ?? null
+  useEffect(() => {
+    if (!loading) onThemeChange(theme)
+  }, [loading, theme, onThemeChange])
 
   const [volume, setVolume] = useStoredState('music-volume', 60)
   const [libraryOpen, setLibraryOpen] = useState(false)

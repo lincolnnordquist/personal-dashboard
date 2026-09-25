@@ -1,13 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { useMutation } from '@apollo/client/react'
+import { useMutation, useQuery } from '@apollo/client/react'
 import {
   ADD_SONG,
   CREATE_PLAYLIST,
   DELETE_PLAYLIST,
+  GET_BACKGROUND_THEMES,
   GET_PLAYLISTS,
   REMOVE_SONG,
   RENAME_PLAYLIST,
+  SET_PLAYLIST_THEME,
   type Playlist,
   type Song,
 } from '../../graphql/queries'
@@ -164,6 +166,17 @@ function PlaylistPanel({
   const [deletePlaylist] = useMutation(DELETE_PLAYLIST, { refetchQueries, awaitRefetchQueries: true })
   const [addSong, { loading: adding }] = useMutation(ADD_SONG, { refetchQueries })
   const [removeSong] = useMutation(REMOVE_SONG, { refetchQueries })
+  const [setTheme] = useMutation(SET_PLAYLIST_THEME, { refetchQueries })
+  const { data: themeData } = useQuery(GET_BACKGROUND_THEMES)
+  const themes = themeData?.backgroundThemes ?? []
+
+  const onThemeChange = async (theme: string) => {
+    try {
+      await setTheme({ variables: { id: playlist.id, theme: theme || null } })
+    } catch (err) {
+      setMessage(errorMessage(err))
+    }
+  }
 
   const onRename = async (e: FormEvent) => {
     e.preventDefault()
@@ -251,6 +264,22 @@ function PlaylistPanel({
           </>
         )}
       </div>
+
+      <label className="theme-picker">
+        <span className="muted">Background</span>
+        <select value={playlist.theme ?? ''} onChange={(e) => onThemeChange(e.target.value)}>
+          <option value="">Mix of all themes</option>
+          {themes.map((t) => (
+            <option key={t.name} value={t.name}>
+              {t.name} ({t.videos.length} {t.videos.length === 1 ? 'video' : 'videos'})
+            </option>
+          ))}
+          {/* A theme set on another machine whose folder isn't here yet. */}
+          {playlist.theme && !themes.some((t) => t.name === playlist.theme) && (
+            <option value={playlist.theme}>{playlist.theme} (folder missing)</option>
+          )}
+        </select>
+      </label>
 
       <form className="inline-form song-add" onSubmit={onAdd}>
         <input

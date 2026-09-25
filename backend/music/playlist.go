@@ -19,8 +19,18 @@ type Entry struct {
 	ChannelName string
 }
 
-// namePrefix marks the line that holds a playlist's display name.
-const namePrefix = "# Playlist:"
+// namePrefix and themePrefix mark the lines holding a playlist's display name and its
+// background theme.
+const (
+	namePrefix  = "# Playlist:"
+	themePrefix = "# Theme:"
+)
+
+// Header is the metadata at the top of a playlist file.
+type Header struct {
+	Name  string
+	Theme string // empty mixes all background themes
+}
 
 const playlistHelp = `# Music player playlist, shared between machines through git.
 # One YouTube video per line: a video ID or link, optionally followed by "# title — channel".
@@ -31,16 +41,20 @@ const playlistHelp = `# Music player playlist, shared between machines through g
 // titleSeparator splits "title — channel" in a line's comment.
 const titleSeparator = " — "
 
-// ParsePlaylist reads a playlist file. The name comes from a "# Playlist: name" line (empty if
-// there is none); other blank and # lines are ignored. Lines that aren't a YouTube video are
-// returned as problems rather than failing the whole file.
-func ParsePlaylist(r io.Reader) (name string, entries []Entry, problems []string) {
+// ParsePlaylist reads a playlist file. The header comes from "# Playlist: name" and
+// "# Theme: folder" lines (empty when missing); other blank and # lines are ignored. Lines
+// that aren't a YouTube video are returned as problems rather than failing the whole file.
+func ParsePlaylist(r io.Reader) (header Header, entries []Entry, problems []string) {
 	seen := map[string]bool{}
 	scanner := bufio.NewScanner(r)
 	for n := 1; scanner.Scan(); n++ {
 		line := strings.TrimSpace(scanner.Text())
-		if rest, ok := strings.CutPrefix(line, namePrefix); ok && name == "" {
-			name = strings.TrimSpace(rest)
+		if rest, ok := strings.CutPrefix(line, namePrefix); ok && header.Name == "" {
+			header.Name = strings.TrimSpace(rest)
+			continue
+		}
+		if rest, ok := strings.CutPrefix(line, themePrefix); ok && header.Theme == "" {
+			header.Theme = strings.TrimSpace(rest)
 			continue
 		}
 		if line == "" || strings.HasPrefix(line, "#") {
@@ -59,13 +73,16 @@ func ParsePlaylist(r io.Reader) (name string, entries []Entry, problems []string
 		title, channel, _ := strings.Cut(strings.TrimSpace(comment), titleSeparator)
 		entries = append(entries, Entry{VideoID: id, Title: strings.TrimSpace(title), ChannelName: strings.TrimSpace(channel)})
 	}
-	return name, entries, problems
+	return header, entries, problems
 }
 
 // FormatPlaylist renders a playlist in the format ParsePlaylist reads.
-func FormatPlaylist(name string, entries []Entry) []byte {
+func FormatPlaylist(header Header, entries []Entry) []byte {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, "%s %s\n", namePrefix, oneLine(name))
+	fmt.Fprintf(&b, "%s %s\n", namePrefix, oneLine(header.Name))
+	if header.Theme != "" {
+		fmt.Fprintf(&b, "%s %s\n", themePrefix, oneLine(header.Theme))
+	}
 	b.WriteString(playlistHelp)
 	b.WriteString("\n")
 	for _, e := range entries {

@@ -20,6 +20,7 @@ type Store interface {
 	ListPlaylists(ctx context.Context) ([]*db.Playlist, error)
 	CreatePlaylist(ctx context.Context, slug, name string) (*db.Playlist, error)
 	UpdatePlaylist(ctx context.Context, id int, slug, name string) error
+	SetPlaylistTheme(ctx context.Context, id int, theme *string) error
 	DeletePlaylist(ctx context.Context, id int) error
 	AddSong(ctx context.Context, playlistID int, videoID, title, channelName, thumbnailURL string) (*db.Song, error)
 	RemoveSong(ctx context.Context, id int) (playlistID int, err error)
@@ -83,6 +84,19 @@ func (l *Library) RenamePlaylist(ctx context.Context, id int, name string) (*db.
 		return nil, err
 	}
 	if err := l.store.UpdatePlaylist(ctx, id, slug, name); err != nil {
+		return nil, err
+	}
+	if err := l.writeFiles(ctx); err != nil {
+		return nil, err
+	}
+	return l.find(ctx, id)
+}
+
+// SetTheme sets a playlist's background theme; an empty theme mixes all themes.
+func (l *Library) SetTheme(ctx context.Context, id int, theme string) (*db.Playlist, error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if err := l.store.SetPlaylistTheme(ctx, id, optional(theme)); err != nil {
 		return nil, err
 	}
 	if err := l.writeFiles(ctx); err != nil {
@@ -185,11 +199,12 @@ func (l *Library) syncFile(ctx context.Context, slug, path string, p *db.Playlis
 	if err != nil {
 		return err
 	}
-	name, entries, problems := ParsePlaylist(f)
+	header, entries, problems := ParsePlaylist(f)
 	f.Close()
 	for _, problem := range problems {
 		log.Printf("playlist %s: %s", filepath.Base(path), problem)
 	}
+	name := header.Name
 	if name == "" {
 		name = slug
 	}
@@ -200,6 +215,11 @@ func (l *Library) syncFile(ctx context.Context, slug, path string, p *db.Playlis
 		}
 	} else if p.Name != name {
 		if err := l.store.UpdatePlaylist(ctx, p.ID, slug, name); err != nil {
+			return err
+		}
+	}
+	if value(p.Theme) != header.Theme {
+		if err := l.store.SetPlaylistTheme(ctx, p.ID, optional(header.Theme)); err != nil {
 			return err
 		}
 	}
@@ -284,7 +304,8 @@ func (l *Library) writeFiles(ctx context.Context) error {
 		for i, s := range p.Songs {
 			entries[i] = Entry{VideoID: s.VideoID, Title: s.Title, ChannelName: s.ChannelName}
 		}
-		if err := writeFileAtomic(l.path(p.Slug), FormatPlaylist(p.Name, entries)); err != nil {
+		header := Header{Name: p.Name, Theme: value(p.Theme)}
+		if err := writeFileAtomic(l.path(p.Slug), FormatPlaylist(header, entries)); err != nil {
 			return fmt.Errorf("write playlist %s: %w", p.Slug, err)
 		}
 		keep[p.Slug] = true
@@ -387,4 +408,19 @@ func (l *Library) find(ctx context.Context, id int) (*db.Playlist, error) {
 		}
 	}
 	return nil, db.ErrNotFound
+}
+
+// optional turns "" into nil, for nullable columns.
+func optional(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+func value(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }

@@ -10,6 +10,8 @@ export default defineConfig({
     proxy: {
       '/graphql': 'http://localhost:8080',
       '/playground': 'http://localhost:8080',
+      // Background videos live in the repo's backgrounds/ folder, served by the Docker nginx.
+      '/backgrounds': 'http://localhost:7070',
     },
   },
 })

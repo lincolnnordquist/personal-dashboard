@@ -314,6 +314,8 @@ export interface Song {
 export interface Playlist {
   id: number
   name: string
+  // Background theme folder; null mixes all themes.
+  theme: string | null
   songs: Song[]
 }
 
@@ -335,6 +337,7 @@ export const GET_PLAYLISTS: TypedDocumentNode<{ playlists: Playlist[] }> = gql`
     playlists {
       id
       name
+      theme
       songs {
         ...SongFields
       }
@@ -381,5 +384,41 @@ export const ADD_SONG: TypedDocumentNode<{ addSong: Song }, { playlistId: number
 export const REMOVE_SONG: TypedDocumentNode<{ removeSong: boolean }, { id: number }> = gql`
   mutation RemoveSong($id: Int!) {
     removeSong(id: $id)
+  }
+`
+
+export interface BackgroundVideo {
+  name: string
+  url: string
+  posterUrl: string | null
+}
+
+export interface BackgroundTheme {
+  name: string
+  videos: BackgroundVideo[]
+}
+
+export const GET_BACKGROUND_THEMES: TypedDocumentNode<{ backgroundThemes: BackgroundTheme[] }> = gql`
+  query GetBackgroundThemes {
+    backgroundThemes {
+      name
+      videos {
+        name
+        url
+        posterUrl
+      }
+    }
+  }
+`
+
+export const SET_PLAYLIST_THEME: TypedDocumentNode<
+  { setPlaylistTheme: { id: number; theme: string | null } },
+  { id: number; theme: string | null }
+> = gql`
+  mutation SetPlaylistTheme($id: Int!, $theme: String) {
+    setPlaylistTheme(id: $id, theme: $theme) {
+      id
+      theme
+    }
   }
 `

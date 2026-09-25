@@ -32,9 +32,12 @@ services:
       DEFAULT_LOCATION_NAME: ${DEFAULT_LOCATION_NAME:-}
       # Music playlists live in the repo (music/playlists/*.txt) so they sync through git.
       PLAYLIST_DIR: /data/music/playlists
+      # Background themes: one folder of videos per theme. nginx serves the same folder.
+      BACKGROUNDS_DIR: /data/backgrounds
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./music:/data/music
+      - ./backgrounds:/data/backgrounds:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,6 +47,9 @@ services:
     restart: unless-stopped
     ports:
       - "${DASHBOARD_PORT:-7070}:80"
+    volumes:
+      # Served at /backgrounds, so adding a theme folder needs no rebuild.
+      - ./backgrounds:/usr/share/nginx/html/backgrounds:ro
     depends_on:
       - backend
 

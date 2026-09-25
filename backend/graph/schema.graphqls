@@ -23,6 +23,8 @@ type Query {
   dockerData: [DockerContainer!]!
   "The music player's playlists, by name. Each playlist's songs are in the order they were added."
   playlists: [Playlist!]!
+  "Background video themes: one per folder of videos, by name."
+  backgroundThemes: [BackgroundTheme!]!
 }
 
 type Mutation {
@@ -30,6 +32,8 @@ type Mutation {
   toggleWidget(id: Int!, enabled: Boolean!): WidgetConfig!
   createPlaylist(name: String!): Playlist!
   renamePlaylist(id: Int!, name: String!): Playlist!
+  "Sets the background theme shown while this playlist is selected. A null theme mixes all themes."
+  setPlaylistTheme(id: Int!, theme: String): Playlist!
   "Deletes a playlist and its songs."
   deletePlaylist(id: Int!): Boolean!
   "Adds a YouTube video to a playlist. Accepts any YouTube video link or an 11-character video ID. Fails if the video doesn't exist, can't be embedded, or is already in that playlist."
@@ -200,7 +204,21 @@ type DockerContainer {
 type Playlist {
   id: Int!
   name: String!
+  "Background theme folder; null mixes all themes."
+  theme: String
   songs: [Song!]!
+}
+
+type BackgroundTheme {
+  name: String!
+  videos: [BackgroundVideo!]!
+}
+
+type BackgroundVideo {
+  name: String!
+  url: String!
+  "A still image, shown to people who prefer reduced motion. Optional."
+  posterUrl: String
 }
 
 type Song {

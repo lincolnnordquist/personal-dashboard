@@ -14,13 +14,15 @@ import (
 type Resolver struct {
 	WidgetRepo *db.WidgetRepo
 	Music      *music.Library
-	Cache      cache.Store
-	Weather    *widgets.WeatherClient
-	Reddit     *widgets.RedditClient
-	Sports     *widgets.SportsClient
-	YouTube    *widgets.YouTubeClient
-	Docker     *widgets.DockerClient // nil when the Docker client could not be created
-	Now        func() time.Time
+	// BackgroundsDir holds one folder of videos per background theme, served at /backgrounds.
+	BackgroundsDir string
+	Cache          cache.Store
+	Weather        *widgets.WeatherClient
+	Reddit         *widgets.RedditClient
+	Sports         *widgets.SportsClient
+	YouTube        *widgets.YouTubeClient
+	Docker         *widgets.DockerClient // nil when the Docker client could not be created
+	Now            func() time.Time
 }
 
 func (r *Resolver) fetchWeather(ctx context.Context, lat, lon float64, unit string) (*widgets.WeatherData, error) {

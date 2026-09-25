@@ -17,6 +17,7 @@ resolver:
 
 # Use hand-written Go types from these packages when a GraphQL type has the same name.
 autobind:
+  - dashboard/backgrounds
   - dashboard/db
   - dashboard/widgets
 

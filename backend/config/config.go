@@ -14,6 +14,7 @@ type Config struct {
 	RedditClientID      string
 	RedditClientSecret  string
 	PlaylistDir         string
+	BackgroundsDir      string
 	DefaultLat          float64
 	DefaultLon          float64
 	DefaultLocationName string
@@ -28,6 +29,7 @@ func Load() (*Config, error) {
 		RedditClientID:      os.Getenv("REDDIT_CLIENT_ID"),
 		RedditClientSecret:  os.Getenv("REDDIT_CLIENT_SECRET"),
 		PlaylistDir:         os.Getenv("PLAYLIST_DIR"),
+		BackgroundsDir:      os.Getenv("BACKGROUNDS_DIR"),
 		DefaultLocationName: getEnv("DEFAULT_LOCATION_NAME", "St. George, UT"),
 	}
 	if cfg.DatabaseURL == "" {

@@ -1125,6 +1125,22 @@ body {
   font-weight: 600;
 }
 
+.theme-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.theme-picker select {
+  padding: 4px 8px;
+  font: inherit;
+  color: var(--text);
+  background: rgba(15, 17, 21, 0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+}
+
 .playlist-actions,
 .confirm {
   display: flex;

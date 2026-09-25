@@ -86,6 +86,9 @@ UPDATE songs SET playlist_id = (SELECT id FROM playlists WHERE slug = 'zelda');
 ALTER TABLE songs ALTER COLUMN playlist_id SET NOT NULL;
 ALTER TABLE songs DROP CONSTRAINT songs_video_id_key;
 ALTER TABLE songs ADD CONSTRAINT songs_playlist_video_key UNIQUE (playlist_id, video_id);`,
+
+	// 5: each playlist can pick a background theme (a folder of videos). NULL mixes all themes.
+	`ALTER TABLE playlists ADD COLUMN theme VARCHAR(64);`,
 }
 
 // Connect opens a connection pool, retrying while Postgres finishes starting up.
