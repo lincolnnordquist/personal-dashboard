@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { shortcutsBlocked } from '../lib/keyboard'
 
 export interface Scene {
   url: string
@@ -15,6 +16,8 @@ const FADE_SECONDS = 2.5
  * Two <video> elements take turns: while one plays, the other preloads the next scene, then
  * they crossfade near the end. When `scenes` changes (a new background theme), it crossfades
  * to the new theme right away. Pass null while the theme is still loading.
+ *
+ * Keyboard: B skips to the next scene of the current theme, Shift+B goes back one.
  */
 export default function Background({ scenes }: { scenes: Scene[] | null }) {
   const reducedMotion = usePrefersReducedMotion()
@@ -88,6 +91,39 @@ function Crossfade({ order }: { order: Scene[] }) {
     play(next)
     setState((s) => ({ ...s, active: slot === 0 ? 1 : 0, pos: (s.pos + 1) % s.order.length }))
   }
+
+  // skip crossfades to the next or previous scene now. The next scene is already preloaded
+  // in the hidden player; going back loads the previous one into it first. Presses during a
+  // crossfade are ignored.
+  const skip = (direction: 1 | -1) => {
+    if (fading.current || state.order.length < 2) return
+    if (direction === 1) {
+      startFade(active)
+      return
+    }
+    fading.current = true
+    const hidden: Slot = active === 0 ? 1 : 0
+    setState((s) => {
+      const pos = (s.pos - 1 + s.order.length) % s.order.length
+      const slots: CrossfadeState['slots'] = [...s.slots]
+      slots[hidden] = s.order[pos]
+      return { ...s, slots, active: hidden, pos }
+    })
+  }
+
+  // The key listener is registered once and calls the latest skip through a ref.
+  const skipRef = useRef(skip)
+  useEffect(() => {
+    skipRef.current = skip
+  })
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'b' || shortcutsBlocked(e)) return
+      skipRef.current(e.shiftKey ? -1 : 1)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const onTimeUpdate = (slot: Slot) => {
     const v = videos.current[slot]

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { shortcutsBlocked } from '../lib/keyboard'
 import { useStoredState } from '../lib/storage'
 
 const IDLE_MS = 3000
@@ -23,11 +24,8 @@ export function useFocusMode() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement
-      const typing = target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
-      // A dialog (the music library) handles Esc itself.
-      const dialogOpen = document.querySelector('[role="dialog"]') !== null
-      if (typing || dialogOpen || e.ctrlKey || e.metaKey || e.altKey) return
+      // Also skipped while the music library is open, since it handles Esc itself.
+      if (shortcutsBlocked(e)) return
       if (e.key === 'f' || e.key === 'F') setFocused(!focused)
       else if (e.key === 'Escape' && focused) setFocused(false)
     }
