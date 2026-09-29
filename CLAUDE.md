@@ -8,7 +8,10 @@ This project is worked on from two machines (desktop and laptop). **STATUS.md is
 
 ## Working agreements
 
-- **Never run git write commands** (commit, push, pull, checkout, restore, stash…). The user does all git work. At a good checkpoint, say what is ready to commit and suggest a message. Read-only git (status, diff, log) is fine.
+- **Git:** commit your own work when a change is done; the user does everything else.
+  - Commit only changes you made in this session. If the user has uncommitted work of their own, leave it out (stage specific paths, never `git add -A` blindly).
+  - **Never push**, pull, rebase, reset, or otherwise rewrite history.
+  - Messages: short, lowercase, casual, like the user jotting down what they did (e.g. "added focus mode clock", "fixed music modal spacing"). No body, no `Co-Authored-By` or any other credit to Claude.
 - **Keep STATUS.md current.** When a feature is finished, a decision is made, or the plan changes, update it in the same change. Keep it short: it is loaded into every session.
 - Ask clarifying questions before starting a feature when there are real design choices; the user likes to decide those.
 - Verify UI changes in a real browser (headless Chrome screenshots) and backend changes against live APIs, not just tests.
