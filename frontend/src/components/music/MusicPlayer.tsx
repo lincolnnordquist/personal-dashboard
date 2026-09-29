@@ -19,11 +19,17 @@ function describeError(code: number): string {
 }
 
 /**
- * A floating music player pinned to the bottom-right. It plays one playlist at a time,
- * shuffling without repeats until every song has played, and crossfades between songs.
- * YouTube requires the player to stay visible, so the current video shows at the top.
+ * The music player: clean controls with no video, as a bar at the bottom of the dashboard
+ * ("bar") or centered under the clock in focus mode ("center"). It plays one playlist at a
+ * time, shuffling without repeats until every song has played, and crossfades between songs.
  */
-export default function MusicPlayer({ onThemeChange }: { onThemeChange: (theme: string | null) => void }) {
+export default function MusicPlayer({
+  onThemeChange,
+  layout,
+}: {
+  onThemeChange: (theme: string | null) => void
+  layout: 'bar' | 'center'
+}) {
   const { data, loading } = useQuery(GET_PLAYLISTS)
   const playlists = data?.playlists ?? []
 
@@ -159,7 +165,7 @@ export default function MusicPlayer({ onThemeChange }: { onThemeChange: (theme: 
   const empty = songs.length === 0
 
   return (
-    <aside className="music-player" aria-label="Music player">
+    <aside className={`music-player music-${layout}`} aria-label="Music player">
       {libraryOpen && (
         <MusicLibrary
           playlists={playlists}
@@ -171,84 +177,88 @@ export default function MusicPlayer({ onThemeChange }: { onThemeChange: (theme: 
         />
       )}
 
-      <div className="music-card">
-        {/* Both players stay mounted; the active one is shown and the other fades out. */}
-        <div className="music-video">
-          <div ref={engine.hostRef(0)} className={engine.active === 0 ? 'music-slot visible' : 'music-slot'} />
-          <div ref={engine.hostRef(1)} className={engine.active === 1 ? 'music-slot visible' : 'music-slot'} />
-          {empty && (
-            <button className="music-empty" onClick={() => setLibraryOpen(true)}>
-              {playlists.length === 0 ? 'Create a playlist to start' : 'Add songs to this playlist'}
-            </button>
-          )}
-        </div>
+      {/* The two YouTube players that crossfade, kept playing but invisible: the user chose
+          a clean player with no video, against YouTube's visible-player embed rule, as a
+          personal-use tradeoff. */}
+      <div className="music-engine" aria-hidden="true">
+        <div ref={engine.hostRef(0)} />
+        <div ref={engine.hostRef(1)} />
+      </div>
 
-        <div className="music-info">
-          {playlists.length > 0 && (
-            <select
-              className="music-playlist"
-              value={playlist?.id}
-              onChange={(e) => switchPlaylist(Number(e.target.value))}
-              aria-label="Playlist"
-            >
-              {playlists.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({p.songs.length})
-                </option>
-              ))}
-            </select>
-          )}
-          <div className="music-title" title={shown?.title}>
-            {shown?.title ?? (empty ? 'No songs yet' : 'Loading…')}
-          </div>
-          <div className="music-channel muted">{shown?.channelName ?? ' '}</div>
-          {notice && <div className="music-notice">{notice}</div>}
-        </div>
-
-        <SeekBar current={engine.progress.current} duration={engine.progress.duration} onSeek={engine.seekTo} />
-
-        <div className="music-controls">
-          <button className="icon-button" onClick={previous} disabled={!canGoBack} aria-label="Previous song">
-            <PrevIcon />
+      <div className="music-now">
+        {empty ? (
+          <button className="music-empty" onClick={() => setLibraryOpen(true)}>
+            {playlists.length === 0 ? 'Create a playlist to start' : 'Add songs to this playlist'}
           </button>
-          <button
-            className="icon-button music-play"
-            onClick={togglePlay}
-            disabled={!ready || empty}
-            aria-label={engine.playing ? 'Pause' : 'Play'}
+        ) : (
+          <>
+            <div className="music-title" title={shown?.title}>
+              {shown?.title ?? 'Loading…'}
+            </div>
+            <div className="music-channel">{shown?.channelName ?? ' '}</div>
+          </>
+        )}
+        {notice && <div className="music-notice">{notice}</div>}
+      </div>
+
+      <SeekBar current={engine.progress.current} duration={engine.progress.duration} onSeek={engine.seekTo} />
+
+      <div className="music-controls">
+        <button className="icon-button" onClick={previous} disabled={!canGoBack} aria-label="Previous song">
+          <PrevIcon />
+        </button>
+        <button
+          className="icon-button music-play"
+          onClick={togglePlay}
+          disabled={!ready || empty}
+          aria-label={engine.playing ? 'Pause' : 'Play'}
+        >
+          {engine.playing ? <PauseIcon /> : <PlayIcon />}
+        </button>
+        <button
+          className="icon-button"
+          onClick={() => next(SKIP_FADE_MS)}
+          disabled={!ready || songs.length < 2}
+          aria-label="Next song"
+        >
+          <NextIcon />
+        </button>
+      </div>
+
+      <div className="music-extras">
+        <label className="music-volume" title={`Volume ${volume}%`}>
+          <VolumeIcon />
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={volume}
+            onChange={(e) => setVolume(Number(e.target.value))}
+            aria-label="Volume"
+          />
+        </label>
+        {playlists.length > 0 && (
+          <select
+            className="music-playlist"
+            value={playlist?.id}
+            onChange={(e) => switchPlaylist(Number(e.target.value))}
+            aria-label="Playlist"
           >
-            {engine.playing ? <PauseIcon /> : <PlayIcon />}
-          </button>
-          <button
-            className="icon-button"
-            onClick={() => next(SKIP_FADE_MS)}
-            disabled={!ready || songs.length < 2}
-            aria-label="Next song"
-          >
-            <NextIcon />
-          </button>
-
-          <label className="music-volume" title={`Volume ${volume}%`}>
-            <VolumeIcon />
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={volume}
-              onChange={(e) => setVolume(Number(e.target.value))}
-              aria-label="Volume"
-            />
-          </label>
-
-          <button
-            className="icon-button"
-            onClick={() => setLibraryOpen(true)}
-            aria-label="Open music library"
-            title="Music library"
-          >
-            <ListIcon />
-          </button>
-        </div>
+            {playlists.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.songs.length})
+              </option>
+            ))}
+          </select>
+        )}
+        <button
+          className="icon-button"
+          onClick={() => setLibraryOpen(true)}
+          aria-label="Open music library"
+          title="Music library"
+        >
+          <ListIcon />
+        </button>
       </div>
     </aside>
   )

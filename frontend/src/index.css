@@ -809,61 +809,78 @@ body {
   font-size: 0.75rem;
 }
 
-/* Music player: a floating card pinned to the bottom-right. */
-.music-player {
+/* The stage: a full-screen layer holding the music player (and the clock in focus mode).
+   On the dashboard the player is a bar at the bottom; in focus mode everything is centered. */
+.stage {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  inset: 0;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: min(340px, calc(100vw - 32px));
-}
-
-.music-card {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(14px) saturate(1.1);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-}
-
-.music-card {
-  overflow: hidden;
-}
-
-/* YouTube requires an embedded player to be at least 200x200 and visible. */
-.music-video {
-  position: relative;
-  height: 200px;
-  background: #000;
-}
-
-.music-slot {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 1.5s ease-in-out;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(24px, 5vh, 48px);
+  padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px));
   pointer-events: none;
 }
 
-.music-slot.visible {
-  opacity: 1;
+.stage > .music-player {
+  pointer-events: auto;
 }
 
-.music-slot iframe {
-  display: block;
+.focus-mode .stage {
+  justify-content: center;
+  padding-bottom: 0;
+}
+
+/* Keep the bottom of the dashboard clear of the player bar. */
+.app {
+  padding-bottom: 120px;
+}
+
+/* The YouTube players: playing but never seen. */
+.music-engine {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: -1;
+  width: 200px;
+  height: 200px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.music-engine > div,
+.music-engine iframe {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   border: 0;
 }
 
+.music-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.music-channel {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--muted);
+}
+
+.music-notice {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--warn);
+}
+
 .music-empty {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
+  padding: 0;
   font: inherit;
   color: var(--muted);
   background: none;
@@ -875,60 +892,199 @@ body {
   color: var(--text);
 }
 
-.music-playlist {
-  max-width: 100%;
-  margin-bottom: 4px;
-  padding: 1px 4px;
-  font: inherit;
-  font-size: 0.75rem;
-  color: var(--muted);
-  background: rgba(15, 17, 21, 0.5);
-  border: 1px solid var(--glass-border);
-  border-radius: 4px;
-}
-
 .music-seek {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px 0;
-  font-size: 0.72rem;
+  gap: 10px;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
 }
 
-.music-seek input {
+.music-seek input,
+.music-volume input {
   flex: 1;
   min-width: 0;
-  accent-color: var(--accent);
-}
-
-.music-info {
-  padding: 10px 14px 0;
-}
-
-.music-title {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-weight: 500;
-}
-
-.music-channel {
-  font-size: 0.8rem;
-}
-
-.music-notice {
-  margin-top: 4px;
-  font-size: 0.8rem;
-  color: var(--warn);
+  accent-color: var(--text);
 }
 
 .music-controls {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px 10px;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* .icon-button.music-play so it wins over the generic .icon-button rules further down. */
+.icon-button.music-play {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.icon-button.music-play:hover:not(:disabled) {
+  background: #fff;
+}
+
+.music-extras {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.music-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 130px;
+  min-width: 70px;
+  color: var(--muted);
+}
+
+.music-playlist {
+  min-width: 0;
+  max-width: 180px;
+  padding: 3px 6px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: rgba(15, 17, 21, 0.5);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+}
+
+/* Bar layout (dashboard): now playing | controls over the seek bar | volume, playlist, library. */
+.music-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  grid-template-areas:
+    'now controls extras'
+    'now seek extras';
+  align-items: center;
+  column-gap: 24px;
+  row-gap: 2px;
+  width: min(1100px, 100%);
+  padding: 10px 20px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px) saturate(1.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.music-bar .music-now {
+  grid-area: now;
+  min-width: 0;
+}
+
+.music-bar .music-title {
+  font-size: 0.95rem;
+}
+
+.music-bar .music-channel {
+  font-size: 0.8rem;
+}
+
+.music-bar .music-controls {
+  grid-area: controls;
+}
+
+.music-bar .music-play {
+  padding: 8px;
+}
+
+.music-bar .music-seek {
+  grid-area: seek;
+}
+
+.music-bar .music-extras {
+  grid-area: extras;
+  justify-content: flex-end;
+}
+
+@media (max-width: 800px) {
+  .music-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'now controls'
+      'seek seek'
+      'extras extras';
+    row-gap: 8px;
+  }
+
+  .music-bar .music-extras {
+    justify-content: space-between;
+  }
+}
+
+/* Centered layout (focus mode): a big, clean player under the clock, no box. */
+.music-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: min(560px, 100%);
+  text-align: center;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.75);
+  animation: focus-fade-in 0.8s ease;
+}
+
+.music-center .music-now {
+  width: 100%;
+}
+
+.music-center .music-title {
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+}
+
+.music-center .music-channel {
+  margin-top: 2px;
+  color: rgba(230, 232, 236, 0.75);
+}
+
+.music-center .music-seek {
+  width: 100%;
+  color: rgba(230, 232, 236, 0.8);
+}
+
+.music-center .music-controls {
+  gap: 28px;
+}
+
+.music-center .music-controls .icon-button {
+  padding: 8px;
+  filter: drop-shadow(0 1px 8px rgba(0, 0, 0, 0.6));
+}
+
+.music-center .music-controls svg {
+  width: 30px;
+  height: 30px;
+}
+
+.music-center .icon-button.music-play {
+  padding: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+
+.music-center .music-play svg {
+  width: 34px;
+  height: 34px;
+}
+
+.music-center .music-extras {
+  justify-content: center;
+  opacity: 0.8;
+  transition: opacity 0.6s ease;
+}
+
+.music-center .music-extras:hover,
+.music-center .music-extras:focus-within {
+  opacity: 1;
+}
+
+/* When the mouse is idle in focus mode, the secondary controls fade back. */
+.focus-idle .music-center .music-extras {
+  opacity: 0.25;
 }
 
 .icon-button {
@@ -1287,14 +1443,11 @@ html:has(.focus-mode) {
   overflow: hidden;
 }
 
+/* The clock sits in the stage, above the centered music player. */
 .focus-clock {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   pointer-events: none;
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
   animation: focus-fade-in 0.8s ease;
@@ -1344,8 +1497,7 @@ html:has(.focus-mode) {
   background: rgba(40, 44, 54, 0.85);
 }
 
-/* After a few seconds without mouse movement in focus mode, hide the cursor and the toggle.
-   The music player stays: YouTube requires its player to remain visible. */
+/* After a few seconds without mouse movement in focus mode, hide the cursor and the toggle. */
 .focus-idle,
 .focus-idle * {
   cursor: none !important;
@@ -1361,7 +1513,8 @@ html:has(.focus-mode) {
     transition: none;
   }
 
-  .focus-clock {
+  .focus-clock,
+  .music-center {
     animation: none;
   }
 }

@@ -1,0 +1,31 @@
+# Playlist: banjo-kazooie
+# Theme: banjo-kazooie
+# Music player playlist, shared between machines through git.
+# One YouTube video per line: a video ID or link, optionally followed by "# title — channel".
+# The dashboard rewrites this file when songs are added or removed in the player, and picks
+# up changes made here (for example after a git pull) within a few seconds.
+
+Lm4wplpESl4  # Overture - Banjo Kazooie — Gamesost
+IlzflkN7g-U  # Spiral Mountain - Banjo Kazooie — Gamesost
+_MjB4QYrNBY  # Gruntilda's Lair - Banjo Kazooie — Gamesost
+wP8uBFQHSG4  # Treasure Trove Cove - Banjo Kazooie — Gamesost
+DsVNLCGB1Uk  # Freezeezy Peak - Banjo Kazooie — Gamesost
+VrdeAwCieuU  # Mad Monster Mansion - Banjo Kazooie — Gamesost
+ciEmmo2XDHo  # Cemetery - Banjo Kazooie — Gamesost
+PmBY55olVWY  # Click Clock Wood (Spring) - Banjo Kazooie — Gamesost
+goVplXoJ6Co  # Click Clock Wood (Summer) - Banjo Kazooie — Gamesost
+WuJ3JoElRCk  # Click Clock Wood (Autumn) - Banjo Kazooie — Gamesost
+3leLnECxL5Y  # Click Clock Wood (Winter) - Banjo Kazooie — Gamesost
+I7icjjgshfw  # Gruntilda's Lair (Grunty's Furnace Fun) - Banjo Kazooie — Gamesost
+jQdNP3TGvsA  # Grunty's Furnace Fun - Banjo Kazooie — Gamesost
+k89y_LZuSYU  # Final Battle - Banjo Kazooie — Gamesost
+IoZMZd6OA8o  # Spiral Mountain - Banjo Tooie — Gamesost
+YM__Bnq-n6s  # Jinjo Village - Banjo Tooie — Gamesost
+c4fF7ExOdug  # Jiggywiggy's Temple - Banjo Tooie — Gamesost
+rAR4d6hkjFE  # Witchyworld - Banjo Tooie — Gamesost
+Z6hHw1Z4qVM  # Mr Patch - Banjo Tooie — Gamesost
+6O4csJPKPrg  # Jolly Roger's Lagoon - Banjo Tooie — Gamesost
+B2PfP8prKeo  # Lord Woo Fak Fak - Banjo Tooie — Gamesost
+PRMivPSJ3Vs  # Grunty Industries - Banjo Tooie — Gamesost
+KxOWyMFssmI  # Hailfire Peaks (Lava Side) - Banjo Tooie — Gamesost
+iQp9scTD9rE  # Mayahem Temple (Outside Mayan Kickball Stadium) - Banjo Tooie — Gamesost

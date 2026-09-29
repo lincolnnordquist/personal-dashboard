@@ -40,9 +40,13 @@ export default function App() {
         {error && <p className="error">Could not load widgets: {error.message}</p>}
         {data && <Grid widgets={data.widgets.filter((w) => w.enabled)} />}
       </main>
-      {focus.focused && <FocusClock />}
       <FocusToggle focused={focus.focused} onToggle={focus.toggle} />
-      <MusicPlayer onThemeChange={setTheme} />
+      {/* One stage holds the clock and the music controls, so the player stays mounted (and
+          keeps playing) when focus mode moves it from the bottom bar to under the clock. */}
+      <div className="stage">
+        {focus.focused && <FocusClock />}
+        <MusicPlayer onThemeChange={setTheme} layout={focus.focused ? 'center' : 'bar'} />
+      </div>
     </div>
   )
 }
