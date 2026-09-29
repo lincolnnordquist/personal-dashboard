@@ -809,8 +809,7 @@ body {
   font-size: 0.75rem;
 }
 
-/* The stage: a full-screen layer holding the music player (and the clock in focus mode).
-   On the dashboard the player is a bar at the bottom; in focus mode everything is centered. */
+/* The stage: a full-screen layer holding the clock and music player in focus mode. */
 .stage {
   position: fixed;
   inset: 0;
@@ -831,11 +830,6 @@ body {
 .focus-mode .stage {
   justify-content: center;
   padding-bottom: 0;
-}
-
-/* Keep the bottom of the dashboard clear of the player bar. */
-.app {
-  padding-bottom: 120px;
 }
 
 /* The YouTube players: playing but never seen. */
@@ -947,65 +941,9 @@ body {
   border-radius: 6px;
 }
 
-/* Bar layout (dashboard): now playing | controls over the seek bar | volume, playlist, library. */
-.music-bar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
-  grid-template-areas:
-    'now controls extras'
-    'now seek extras';
-  align-items: center;
-  column-gap: 24px;
-  row-gap: 2px;
-  width: min(1100px, 100%);
-  padding: 10px 20px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(14px) saturate(1.1);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-}
-
-.music-bar .music-now {
-  grid-area: now;
-  min-width: 0;
-}
-
-.music-bar .music-title {
-  font-size: 0.95rem;
-}
-
-
-.music-bar .music-controls {
-  grid-area: controls;
-}
-
-.music-bar .music-play {
-  padding: 8px;
-}
-
-.music-bar .music-seek {
-  grid-area: seek;
-}
-
-.music-bar .music-extras {
-  grid-area: extras;
-  justify-content: flex-end;
-}
-
-@media (max-width: 800px) {
-  .music-bar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      'now controls'
-      'seek seek'
-      'extras extras';
-    row-gap: 8px;
-  }
-
-  .music-bar .music-extras {
-    justify-content: space-between;
-  }
+/* Hidden (dashboard): no controls, but the YouTube players inside keep playing. */
+.music-hidden > :not(.music-engine) {
+  display: none;
 }
 
 /* Centered layout (focus mode): a big, clean player under the clock, no box. */

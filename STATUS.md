@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-09-28 (desktop)_
+_Last updated: 2026-09-29 (desktop)_
 
 ## Current focus
 
@@ -24,7 +24,7 @@ Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 - **YouTube**, center: horizontal video row with Shorts hidden. Sample channels: @fireship @linustechtips @mkbhd @veritasium @videogamedunkey.
 - **Docker** container status, left: display only, grouped by Compose project.
 - **Calendar**, left: month grid, ISO week, Seahawks game-day dots (win/loss/upcoming).
-- **Music player:** no video, just clean controls (song title only, no channel; seek bar, prev/play/next, volume, playlist picker, library). On the dashboard it's a glass bar centered at the bottom; in focus mode it sits centered under the clock and date (its secondary row dims when the mouse is idle). It lives in a full-screen `.stage` in `App.tsx` with the focus clock, so switching modes only changes its layout and never interrupts playback. Code is in `frontend/src/components/music/` and `backend/music/`, with `playlists` and `songs` tables (migrations 3–4).
+- **Music player:** no video, just clean controls (song title only, no channel; seek bar, prev/play/next, volume, playlist picker, library). It only appears in focus mode, centered under the clock and date (its secondary row dims when the mouse is idle); the normal dashboard shows no player at all, but music keeps playing there. It lives in a full-screen `.stage` in `App.tsx` with the focus clock and stays mounted in both modes (`layout="hidden"` hides everything but the invisible YouTube players), so switching never interrupts playback. The music library is opened from the focus-mode player. Code is in `frontend/src/components/music/` and `backend/music/`, with `playlists` and `songs` tables (migrations 3–4).
   - **Multiple playlists.** One plays at a time, chosen with a picker on the player (remembered in localStorage). The same song can be in several playlists. Switching playlists while playing crossfades into the new one.
   - **Music library window** (☰ button): a centered window with playlists on the left (create) and the selected playlist's songs on the right (rename, delete with confirmation, add by pasting a YouTube link, remove, click a song to play it). Esc or the backdrop closes it.
   - **Seek bar** with elapsed/total time; it seeks on release, not while dragging.

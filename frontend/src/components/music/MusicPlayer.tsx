@@ -19,16 +19,18 @@ function describeError(code: number): string {
 }
 
 /**
- * The music player: clean controls with no video, as a bar at the bottom of the dashboard
- * ("bar") or centered under the clock in focus mode ("center"). It plays one playlist at a
- * time, shuffling without repeats until every song has played, and crossfades between songs.
+ * The music player: clean controls with no video, centered under the clock in focus mode. On
+ * the dashboard the controls are hidden but the music keeps playing. It plays one playlist at
+ * a time, shuffling without repeats until every song has played, and crossfades between songs.
  */
 export default function MusicPlayer({
   onThemeChange,
   layout,
 }: {
   onThemeChange: (theme: string | null) => void
-  layout: 'bar' | 'center'
+  // hidden keeps the (invisible) YouTube players running so music continues on the
+  // dashboard, but shows no controls; center is the focus-mode player under the clock.
+  layout: 'hidden' | 'center'
 }) {
   const { data, loading } = useQuery(GET_PLAYLISTS)
   const playlists = data?.playlists ?? []

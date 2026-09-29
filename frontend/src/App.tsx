@@ -46,11 +46,11 @@ export default function App() {
         {data && <Grid widgets={data.widgets.filter((w) => w.enabled)} />}
       </main>
       <FocusToggle focused={focus.focused} onToggle={focus.toggle} />
-      {/* One stage holds the clock and the music controls, so the player stays mounted (and
-          keeps playing) when focus mode moves it from the bottom bar to under the clock. */}
+      {/* One stage holds the clock and the music controls. The player stays mounted outside
+          focus mode (controls hidden) so the music keeps playing on the dashboard. */}
       <div className="stage">
         {focus.focused && <FocusClock />}
-        <MusicPlayer onThemeChange={setTheme} layout={focus.focused ? 'center' : 'bar'} />
+        <MusicPlayer onThemeChange={setTheme} layout={focus.focused ? 'center' : 'hidden'} />
       </div>
     </div>
   )
