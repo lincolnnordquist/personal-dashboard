@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
 /**
- * Loads a background theme's font and applies it to the whole page by setting the
- * --theme-font CSS variable, which index.css puts first in every font stack. With no theme or
- * no font file, the variable is removed and the page falls back to its default fonts.
+ * Loads a background theme's font and exposes it as the --theme-font CSS variable, which
+ * index.css uses for the focus-mode clock, date, and song. With no theme or no font file, the
+ * variable is removed and those fall back to the default fonts.
  */
 export function useThemeFont(theme: string | null, fontUrl: string | null) {
   useEffect(() => {
