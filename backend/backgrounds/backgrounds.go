@@ -4,10 +4,12 @@ package backgrounds
 
 import (
 	"errors"
+	"io/fs"
 	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -30,7 +32,9 @@ var (
 )
 
 // List returns every theme in dir that has at least one video, sorted by name. URLs are
-// urlPrefix/<theme>/<file>, matching where the web server serves dir.
+// urlPrefix/<theme>/<file>?v=<version>, matching where the web server serves dir. The version
+// comes from the file's size and modification time: browsers cache the videos for days, so
+// replacing a file under the same name must change its URL or the old video keeps showing.
 func List(dir, urlPrefix string) ([]*BackgroundTheme, error) {
 	entries, err := os.ReadDir(dir)
 	if errors.Is(err, os.ErrNotExist) {
@@ -75,11 +79,11 @@ func readTheme(path, name, urlPrefix string) (*BackgroundTheme, error) {
 	if err != nil {
 		return nil, err
 	}
-	posters := map[string]string{} // video base name -> poster file name
+	posters := map[string]fs.DirEntry{} // video base name -> poster file
 	if pf, err := os.ReadDir(filepath.Join(path, "posters")); err == nil {
 		for _, p := range pf {
 			if ext := strings.ToLower(filepath.Ext(p.Name())); hasExt(posterExts, ext) {
-				posters[strings.TrimSuffix(p.Name(), filepath.Ext(p.Name()))] = p.Name()
+				posters[strings.TrimSuffix(p.Name(), filepath.Ext(p.Name()))] = p
 			}
 		}
 	}
@@ -92,14 +96,23 @@ func readTheme(path, name, urlPrefix string) (*BackgroundTheme, error) {
 			continue
 		}
 		stem := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
-		v := &BackgroundVideo{Name: stem, URL: base + url.PathEscape(f.Name())}
+		v := &BackgroundVideo{Name: stem, URL: base + url.PathEscape(f.Name()) + version(f)}
 		if poster, ok := posters[stem]; ok {
-			u := base + "posters/" + url.PathEscape(poster)
+			u := base + "posters/" + url.PathEscape(poster.Name()) + version(poster)
 			v.PosterURL = &u
 		}
 		theme.Videos = append(theme.Videos, v)
 	}
 	return theme, nil
+}
+
+// version is a "?v=..." suffix that changes whenever the file is replaced or edited.
+func version(f fs.DirEntry) string {
+	info, err := f.Info()
+	if err != nil {
+		return ""
+	}
+	return "?v=" + strconv.FormatInt(info.ModTime().Unix(), 36) + strconv.FormatInt(info.Size(), 36)
 }
 
 func hasExt(exts []string, ext string) bool {

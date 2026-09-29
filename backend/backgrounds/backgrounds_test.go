@@ -3,7 +3,9 @@ package backgrounds
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,15 +34,15 @@ func TestList(t *testing.T) {
 
 	majora, zelda := themes[0], themes[1]
 	assert.Equal(t, "Majora's Mask", majora.Name, "sorted by name, case-insensitively")
-	assert.Equal(t, "/backgrounds/Majora%27s%20Mask/moon.webm", majora.Videos[0].URL)
+	assert.Equal(t, "/backgrounds/Majora%27s%20Mask/moon.webm", withoutVersion(majora.Videos[0].URL))
 	assert.Nil(t, majora.Videos[0].PosterURL)
 
 	require.Len(t, zelda.Videos, 2)
 	assert.Equal(t, "clock-town", zelda.Videos[0].Name)
 	assert.Nil(t, zelda.Videos[0].PosterURL, "posters are optional")
-	assert.Equal(t, "/backgrounds/zelda/kakariko.mp4", zelda.Videos[1].URL)
+	assert.Equal(t, "/backgrounds/zelda/kakariko.mp4", withoutVersion(zelda.Videos[1].URL))
 	require.NotNil(t, zelda.Videos[1].PosterURL)
-	assert.Equal(t, "/backgrounds/zelda/posters/kakariko.jpg", *zelda.Videos[1].PosterURL)
+	assert.Equal(t, "/backgrounds/zelda/posters/kakariko.jpg", withoutVersion(*zelda.Videos[1].PosterURL))
 
 	ok, err := Exists(dir, "zelda")
 	require.NoError(t, err)
@@ -53,4 +55,29 @@ func TestListMissingDir(t *testing.T) {
 	themes, err := List(filepath.Join(t.TempDir(), "nope"), "/backgrounds")
 	require.NoError(t, err)
 	assert.Empty(t, themes)
+}
+
+func withoutVersion(u string) string {
+	base, _, _ := strings.Cut(u, "?")
+	return base
+}
+
+func TestReplacedVideoGetsNewURL(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "zelda", "lake-hylia.mp4")
+	touch(t, path)
+	url := func() string {
+		themes, err := List(dir, "/backgrounds")
+		require.NoError(t, err)
+		return themes[0].Videos[0].URL
+	}
+
+	first := url()
+	assert.Contains(t, first, "?v=")
+	assert.Equal(t, first, url(), "an unchanged file keeps its URL, so it stays cached")
+
+	// Replace the video with a different one under the same name.
+	require.NoError(t, os.WriteFile(path, []byte("a different video"), 0o644))
+	require.NoError(t, os.Chtimes(path, time.Now(), time.Now().Add(time.Minute)))
+	assert.NotEqual(t, first, url(), "a replaced file gets a new URL, so browsers fetch it")
 }

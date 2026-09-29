@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { shortcutsBlocked } from '../lib/keyboard'
+import { useStoredState } from '../lib/storage'
 
 export interface Scene {
   url: string
@@ -8,8 +9,12 @@ export interface Scene {
 
 type Slot = 0 | 1
 
-// Must match the opacity transition on .background-media in index.css.
+// Must match the opacity transition on .background-frame in index.css.
 const FADE_SECONDS = 2.5
+
+// cover fills the screen, cropping and scaling; native shows videos at their real pixel size,
+// centered with faded edges (scaled down only if bigger than the window).
+type Fit = 'cover' | 'native'
 
 /**
  * Full-screen ambient video behind the dashboard, cycling through `scenes` in a shuffled order.
@@ -17,7 +22,8 @@ const FADE_SECONDS = 2.5
  * they crossfade near the end. When `scenes` changes (a new background theme), it crossfades
  * to the new theme right away. Pass null while the theme is still loading.
  *
- * Keyboard: B skips to the next scene of the current theme, Shift+B goes back one.
+ * Keyboard: B skips to the next scene of the current theme, Shift+B goes back one, and V
+ * switches between filling the screen and showing videos at their actual size.
  */
 export default function Background({ scenes }: { scenes: Scene[] | null }) {
   const reducedMotion = usePrefersReducedMotion()
@@ -25,16 +31,31 @@ export default function Background({ scenes }: { scenes: Scene[] | null }) {
   const [seed] = useState(Math.random)
   const order = useMemo(() => (scenes ? shuffled(scenes, seed) : []), [scenes, seed])
 
-  if (order.length === 0) return <div className="background" aria-hidden="true" />
+  const [fit, setFit] = useStoredState<Fit>('background-fit', 'cover')
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'v' || shortcutsBlocked(e)) return
+      setFit(fit === 'cover' ? 'native' : 'cover')
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [fit, setFit])
+
+  const className = `background fit-${fit}`
+  if (order.length === 0) return <div className={className} aria-hidden="true" />
   if (reducedMotion) {
     const still = order.find((s) => s.posterUrl)
     return (
-      <div className="background" aria-hidden="true">
-        {still && <img className="background-media visible" src={still.posterUrl!} alt="" />}
+      <div className={className} aria-hidden="true">
+        {still && (
+          <div className="background-frame visible">
+            <img className="background-media" src={still.posterUrl!} alt="" />
+          </div>
+        )}
       </div>
     )
   }
-  return <Crossfade order={order} />
+  return <Crossfade order={order} className={className} />
 }
 
 interface CrossfadeState {
@@ -44,13 +65,15 @@ interface CrossfadeState {
   active: Slot
   // The showing scene's index in order.
   pos: number
+  // True after a manual skip, which uses a much shorter crossfade (.quick-fade in index.css).
+  quick: boolean
 }
 
 function initialState(order: Scene[]): CrossfadeState {
-  return { order, slots: [order[0], order.length > 1 ? order[1] : null], active: 0, pos: 0 }
+  return { order, slots: [order[0], order.length > 1 ? order[1] : null], active: 0, pos: 0, quick: false }
 }
 
-function Crossfade({ order }: { order: Scene[] }) {
+function Crossfade({ order, className }: { order: Scene[]; className: string }) {
   const videos = useRef<[HTMLVideoElement | null, HTMLVideoElement | null]>([null, null])
   const fading = useRef(false)
   const [state, setState] = useState(() => initialState(order))
@@ -60,7 +83,7 @@ function Crossfade({ order }: { order: Scene[] }) {
     const hidden: Slot = state.active === 0 ? 1 : 0
     const slots: CrossfadeState['slots'] = [...state.slots]
     slots[hidden] = order[0]
-    setState({ order, slots, active: hidden, pos: 0 })
+    setState({ order, slots, active: hidden, pos: 0, quick: false })
   }
 
   const { slots, active } = state
@@ -89,25 +112,26 @@ function Crossfade({ order }: { order: Scene[] }) {
     const next = videos.current[slot === 0 ? 1 : 0]
     if (next) next.currentTime = 0
     play(next)
-    setState((s) => ({ ...s, active: slot === 0 ? 1 : 0, pos: (s.pos + 1) % s.order.length }))
+    setState((s) => ({ ...s, active: slot === 0 ? 1 : 0, pos: (s.pos + 1) % s.order.length, quick: false }))
   }
 
-  // skip crossfades to the next or previous scene now. The next scene is already preloaded
-  // in the hidden player; going back loads the previous one into it first. Presses during a
-  // crossfade are ignored.
+  // skip jumps to the next or previous scene with a quick crossfade. It loads that scene into
+  // the hidden player (the next one is usually preloaded there already) and swaps. Presses
+  // mid-fade work too, so holding or tapping B flicks through scenes.
   const skip = (direction: 1 | -1) => {
-    if (fading.current || state.order.length < 2) return
-    if (direction === 1) {
-      startFade(active)
-      return
-    }
+    const n = state.order.length
+    if (n < 2) return
     fading.current = true
     const hidden: Slot = active === 0 ? 1 : 0
+    const pos = (state.pos + direction + n) % n
+    const scene = state.order[pos]
+    // A player that already holds this scene may be partway through it: start from the top.
+    const player = videos.current[hidden]
+    if (player && slots[hidden] === scene) player.currentTime = 0
     setState((s) => {
-      const pos = (s.pos - 1 + s.order.length) % s.order.length
       const slots: CrossfadeState['slots'] = [...s.slots]
-      slots[hidden] = s.order[pos]
-      return { ...s, slots, active: hidden, pos }
+      slots[hidden] = scene
+      return { ...s, slots, active: hidden, pos, quick: true }
     })
   }
 
@@ -143,28 +167,34 @@ function Crossfade({ order }: { order: Scene[] }) {
   }
 
   return (
-    <div className="background" aria-hidden="true">
+    <div className={state.quick ? `${className} quick-fade` : className} aria-hidden="true">
       {([0, 1] as const).map((slot) => {
         const scene = slots[slot]
+        // The frame fades in and out, and in actual-size mode wraps the video tightly so its
+        // edge fade (a static overlay, far cheaper than a mask on the video) lines up with it.
         return (
-          <video
+          <div
             key={slot}
-            ref={(el) => {
-              videos.current[slot] = el
-            }}
-            className={slot === active ? 'background-media visible' : 'background-media'}
-            src={scene?.url}
-            poster={scene?.posterUrl ?? undefined}
-            muted
-            playsInline
-            preload="auto"
-            loop={state.order.length === 1}
-            disablePictureInPicture
-            onTimeUpdate={() => onTimeUpdate(slot)}
-            // Fallback in case timeupdate never landed inside the fade window.
-            onEnded={() => startFade(slot)}
-            onTransitionEnd={(e) => e.propertyName === 'opacity' && onFadedOut(slot)}
-          />
+            className={slot === active ? 'background-frame visible' : 'background-frame'}
+            onTransitionEnd={(e) => e.target === e.currentTarget && e.propertyName === 'opacity' && onFadedOut(slot)}
+          >
+            <video
+              ref={(el) => {
+                videos.current[slot] = el
+              }}
+              className="background-media"
+              src={scene?.url}
+              poster={scene?.posterUrl ?? undefined}
+              muted
+              playsInline
+              preload="auto"
+              loop={state.order.length === 1}
+              disablePictureInPicture
+              onTimeUpdate={() => onTimeUpdate(slot)}
+              // Fallback in case timeupdate never landed inside the fade window.
+              onEnded={() => startFade(slot)}
+            />
+          </div>
         )
       })}
     </div>
