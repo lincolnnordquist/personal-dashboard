@@ -212,6 +212,8 @@ type Playlist {
 type BackgroundTheme {
   name: String!
   videos: [BackgroundVideo!]!
+  "The theme's font (<theme>/<theme>.woff2|woff|otf|ttf), used for the whole page. Optional."
+  fontUrl: String
 }
 
 type BackgroundVideo {

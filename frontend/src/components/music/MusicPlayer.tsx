@@ -191,12 +191,9 @@ export default function MusicPlayer({
             {playlists.length === 0 ? 'Create a playlist to start' : 'Add songs to this playlist'}
           </button>
         ) : (
-          <>
-            <div className="music-title" title={shown?.title}>
-              {shown?.title ?? 'Loading…'}
-            </div>
-            <div className="music-channel">{shown?.channelName ?? ' '}</div>
-          </>
+          <div className="music-title" title={shown?.title}>
+            {shown?.title ?? 'Loading…'}
+          </div>
         )}
         {notice && <div className="music-notice">{notice}</div>}
       </div>

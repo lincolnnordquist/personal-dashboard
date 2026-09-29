@@ -4,6 +4,7 @@ import { GET_BACKGROUND_THEMES, GET_WIDGETS } from './graphql/queries'
 import Background, { type Scene } from './components/Background'
 import { FocusClock, FocusToggle } from './components/FocusMode'
 import { useFocusMode } from './components/useFocusMode'
+import { useThemeFont } from './components/useThemeFont'
 import Grid from './components/Grid'
 import MusicPlayer from './components/music/MusicPlayer'
 import SearchBar from './components/SearchBar'
@@ -23,6 +24,10 @@ export default function App() {
     const chosen = themes.filter((t) => t.name === theme)
     return (chosen.length > 0 ? chosen : themes).flatMap((t) => t.videos)
   }, [themeData, theme])
+
+  // The theme's font applies to the whole page; the mix of all themes has none.
+  const themeInfo = themeData?.backgroundThemes.find((t) => t.name === theme)
+  useThemeFont(themeInfo?.name ?? null, themeInfo?.fontUrl ?? null)
 
   const focus = useFocusMode()
   const modeClass = [focus.focused && 'focus-mode', focus.idle && 'focus-idle'].filter(Boolean).join(' ')

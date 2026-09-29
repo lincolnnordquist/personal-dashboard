@@ -1,5 +1,6 @@
 // Package backgrounds lists the background video themes. A theme is a folder of videos in the
-// backgrounds directory, optionally with a posters/ folder of stills named after each video.
+// backgrounds directory, optionally with a posters/ folder of stills named after each video
+// and a font file named after the folder (e.g. zelda/zelda.otf) used for the whole page.
 package backgrounds
 
 import (
@@ -15,8 +16,9 @@ import (
 
 // BackgroundTheme is bound to the GraphQL BackgroundTheme type.
 type BackgroundTheme struct {
-	Name   string
-	Videos []*BackgroundVideo
+	Name    string
+	Videos  []*BackgroundVideo
+	FontURL *string
 }
 
 // BackgroundVideo is bound to the GraphQL BackgroundVideo type.
@@ -29,6 +31,7 @@ type BackgroundVideo struct {
 var (
 	videoExts  = []string{".mp4", ".webm"}
 	posterExts = []string{".jpg", ".jpeg", ".webp", ".png"}
+	fontExts   = []string{".woff2", ".woff", ".otf", ".ttf"}
 )
 
 // List returns every theme in dir that has at least one video, sorted by name. URLs are
@@ -92,10 +95,21 @@ func readTheme(path, name, urlPrefix string) (*BackgroundTheme, error) {
 	base := urlPrefix + "/" + url.PathEscape(name) + "/"
 	for _, f := range files {
 		ext := strings.ToLower(filepath.Ext(f.Name()))
-		if f.IsDir() || strings.HasPrefix(f.Name(), ".") || !hasExt(videoExts, ext) {
+		if f.IsDir() || strings.HasPrefix(f.Name(), ".") {
 			continue
 		}
 		stem := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
+		// The theme's font: a font file named after the folder, in any letter case.
+		if hasExt(fontExts, ext) && strings.EqualFold(stem, name) {
+			if theme.FontURL == nil || fontRank(ext) < fontRank(filepath.Ext(*theme.FontURL)) {
+				u := base + url.PathEscape(f.Name()) + version(f)
+				theme.FontURL = &u
+			}
+			continue
+		}
+		if !hasExt(videoExts, ext) {
+			continue
+		}
 		v := &BackgroundVideo{Name: stem, URL: base + url.PathEscape(f.Name()) + version(f)}
 		if poster, ok := posters[stem]; ok {
 			u := base + "posters/" + url.PathEscape(poster.Name()) + version(poster)
@@ -104,6 +118,18 @@ func readTheme(path, name, urlPrefix string) (*BackgroundTheme, error) {
 		theme.Videos = append(theme.Videos, v)
 	}
 	return theme, nil
+}
+
+// fontRank orders font formats by preference (smallest, most web-friendly first), for a theme
+// that has the same font in several formats.
+func fontRank(ext string) int {
+	ext, _, _ = strings.Cut(strings.ToLower(ext), "?")
+	for i, e := range fontExts {
+		if e == ext {
+			return i
+		}
+	}
+	return len(fontExts)
 }
 
 // version is a "?v=..." suffix that changes whenever the file is replaced or edited.

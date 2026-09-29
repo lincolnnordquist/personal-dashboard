@@ -15,7 +15,8 @@
   --glass-border: rgba(255, 255, 255, 0.07);
 
   color-scheme: dark;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* --theme-font is set by useThemeFont when the current background theme has a font file. */
+  font-family: var(--theme-font, system-ui), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   color: var(--text);
   background: var(--bg);
@@ -86,7 +87,7 @@ body {
 }
 
 .greeting {
-  font-family: 'Zelda', var(--font-body, system-ui);
+  font-family: var(--theme-font, 'Zelda'), system-ui;
   font-size: 2rem;
   letter-spacing: 0.03em;
 }
@@ -866,12 +867,6 @@ body {
   font-weight: 500;
 }
 
-.music-channel {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: var(--muted);
-}
 
 .music-notice {
   margin-top: 4px;
@@ -981,9 +976,6 @@ body {
   font-size: 0.95rem;
 }
 
-.music-bar .music-channel {
-  font-size: 0.8rem;
-}
 
 .music-bar .music-controls {
   grid-area: controls;
@@ -1037,10 +1029,6 @@ body {
   font-size: clamp(1.1rem, 2vw, 1.4rem);
 }
 
-.music-center .music-channel {
-  margin-top: 2px;
-  color: rgba(230, 232, 236, 0.75);
-}
 
 .music-center .music-seek {
   width: 100%;
@@ -1463,7 +1451,7 @@ html:has(.focus-mode) {
 
 .focus-date {
   margin-top: 12px;
-  font-family: 'Zelda', var(--font-body, system-ui);
+  font-family: var(--theme-font, 'Zelda'), system-ui;
   font-size: clamp(1.1rem, 2.4vw, 1.6rem);
   letter-spacing: 0.04em;
   color: rgba(230, 232, 236, 0.85);

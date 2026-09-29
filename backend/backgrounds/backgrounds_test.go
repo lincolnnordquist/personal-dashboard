@@ -23,6 +23,9 @@ func TestList(t *testing.T) {
 	touch(t, filepath.Join(dir, "zelda", "clock-town.mp4"))
 	touch(t, filepath.Join(dir, "zelda", "posters", "kakariko.jpg"))
 	touch(t, filepath.Join(dir, "zelda", "notes.txt"))
+	touch(t, filepath.Join(dir, "zelda", "Zelda.ttf"))
+	touch(t, filepath.Join(dir, "zelda", "zelda.woff2"))
+	touch(t, filepath.Join(dir, "zelda", "other-font.otf"))
 	touch(t, filepath.Join(dir, "Majora's Mask", "moon.webm"))
 	touch(t, filepath.Join(dir, "empty", "readme.md"))
 	touch(t, filepath.Join(dir, ".hidden", "x.mp4"))
@@ -36,8 +39,12 @@ func TestList(t *testing.T) {
 	assert.Equal(t, "Majora's Mask", majora.Name, "sorted by name, case-insensitively")
 	assert.Equal(t, "/backgrounds/Majora%27s%20Mask/moon.webm", withoutVersion(majora.Videos[0].URL))
 	assert.Nil(t, majora.Videos[0].PosterURL)
+	assert.Nil(t, majora.FontURL, "fonts are optional")
 
-	require.Len(t, zelda.Videos, 2)
+	require.Len(t, zelda.Videos, 2, "font files aren't videos")
+	require.NotNil(t, zelda.FontURL)
+	assert.Equal(t, "/backgrounds/zelda/zelda.woff2", withoutVersion(*zelda.FontURL),
+		"the font named after the folder, preferring woff2; other fonts are ignored")
 	assert.Equal(t, "clock-town", zelda.Videos[0].Name)
 	assert.Nil(t, zelda.Videos[0].PosterURL, "posters are optional")
 	assert.Equal(t, "/backgrounds/zelda/kakariko.mp4", withoutVersion(zelda.Videos[1].URL))

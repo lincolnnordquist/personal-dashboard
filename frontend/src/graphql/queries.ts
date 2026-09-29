@@ -396,12 +396,14 @@ export interface BackgroundVideo {
 export interface BackgroundTheme {
   name: string
   videos: BackgroundVideo[]
+  fontUrl: string | null
 }
 
 export const GET_BACKGROUND_THEMES: TypedDocumentNode<{ backgroundThemes: BackgroundTheme[] }> = gql`
   query GetBackgroundThemes {
     backgroundThemes {
       name
+      fontUrl
       videos {
         name
         url

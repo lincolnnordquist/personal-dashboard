@@ -41,8 +41,9 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	BackgroundTheme struct {
-		Name   func(childComplexity int) int
-		Videos func(childComplexity int) int
+		FontURL func(childComplexity int) int
+		Name    func(childComplexity int) int
+		Videos  func(childComplexity int) int
 	}
 
 	BackgroundVideo struct {
@@ -262,6 +263,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
+	case "BackgroundTheme.fontUrl":
+		if e.ComplexityRoot.BackgroundTheme.FontURL == nil {
+			break
+		}
+
+		return e.ComplexityRoot.BackgroundTheme.FontURL(childComplexity), true
 	case "BackgroundTheme.name":
 		if e.ComplexityRoot.BackgroundTheme.Name == nil {
 			break
@@ -1139,6 +1146,8 @@ func (ec *executionContext) childFields_BackgroundTheme(ctx context.Context, fie
 		return ec.fieldContext_BackgroundTheme_name(ctx, field)
 	case "videos":
 		return ec.fieldContext_BackgroundTheme_videos(ctx, field)
+	case "fontUrl":
+		return ec.fieldContext_BackgroundTheme_fontUrl(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type BackgroundTheme", field.Name)
 }
@@ -1964,6 +1973,29 @@ func (ec *executionContext) fieldContext_BackgroundTheme_videos(_ context.Contex
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _BackgroundTheme_fontUrl(ctx context.Context, field graphql.CollectedField, obj *backgrounds.BackgroundTheme) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_BackgroundTheme_fontUrl(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.FontURL, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_BackgroundTheme_fontUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("BackgroundTheme", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _BackgroundVideo_name(ctx context.Context, field graphql.CollectedField, obj *backgrounds.BackgroundVideo) (ret graphql.Marshaler) {
@@ -6138,6 +6170,11 @@ func (ec *executionContext) _BackgroundTheme(ctx context.Context, sel ast.Select
 		case "videos":
 			out.Values[i] = ec._BackgroundTheme_videos(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "fontUrl":
+			out.Values[i] = ec._BackgroundTheme_fontUrl(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
 		default:
