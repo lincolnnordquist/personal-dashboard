@@ -25,6 +25,8 @@ type Query {
   playlists: [Playlist!]!
   "Background video themes: one per folder of videos, by name."
   backgroundThemes: [BackgroundTheme!]!
+  "Bookmarked sites in named groups, in the order of the links file."
+  quickLinks: QuickLinks!
 }
 
 type Mutation {
@@ -39,6 +41,8 @@ type Mutation {
   "Adds a YouTube video to a playlist. Accepts any YouTube video link or an 11-character video ID. Fails if the video doesn't exist, can't be embedded, or is already in that playlist."
   addSong(playlistId: Int!, url: String!): Song!
   removeSong(id: Int!): Boolean!
+  "Replaces all quick links (groups and their order) and rewrites the links file. version is the one the editor loaded; if the links changed since, this fails and nothing is saved. URLs without a scheme get https://; a link without a title is named after its site."
+  saveQuickLinks(version: String!, groups: [QuickLinkGroupInput!]!): QuickLinks!
 }
 
 type WidgetConfig {
@@ -233,4 +237,35 @@ type Song {
   thumbnailUrl: String!
   "RFC 3339 timestamp."
   addedAt: String!
+}
+
+type QuickLinks {
+  "Changes whenever the links do. saveQuickLinks needs the current one."
+  version: String!
+  groups: [QuickLinkGroup!]!
+}
+
+type QuickLinkGroup {
+  name: String!
+  links: [QuickLink!]!
+}
+
+type QuickLink {
+  title: String!
+  url: String!
+  "An emoji or image URL shown instead of the site's icon; empty for the site's own icon."
+  icon: String!
+  "The site's favicon, fetched and cached by the dashboard. 404s when the site has none."
+  faviconUrl: String!
+}
+
+input QuickLinkGroupInput {
+  name: String!
+  links: [QuickLinkInput!]!
+}
+
+input QuickLinkInput {
+  title: String!
+  url: String!
+  icon: String
 }

@@ -13,6 +13,7 @@ import (
 	"dashboard/config"
 	"dashboard/db"
 	"dashboard/graph"
+	"dashboard/links"
 	"dashboard/music"
 	"dashboard/widgets"
 
@@ -52,6 +53,11 @@ func main() {
 		log.Printf("playlist sync: %v", err)
 	}
 	go library.Watch(ctx, 5*time.Second)
+	quickLinks := links.NewStore(cfg.LinksFile)
+	if err := quickLinks.Load(); err != nil {
+		log.Printf("links: %v", err)
+	}
+	go quickLinks.Watch(ctx, 5*time.Second)
 	store := cache.NewPostgresStore(pool)
 	weather := widgets.NewWeatherClient()
 	reddit := widgets.NewRedditClient(cfg.RedditClientID, cfg.RedditClientSecret)
@@ -76,6 +82,7 @@ func main() {
 	resolver := &graph.Resolver{
 		WidgetRepo:     repo,
 		Music:          library,
+		Links:          quickLinks,
 		BackgroundsDir: cfg.BackgroundsDir,
 		Cache:          store,
 		Weather:        weather,
@@ -93,6 +100,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/graphql", gql)
 	mux.Handle("GET /playground", playground.Handler("Dashboard GraphQL", "/graphql"))
+	mux.Handle("GET /icons", links.NewFavicons(quickLinks, db.NewIconRepo(pool)))
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
 	})

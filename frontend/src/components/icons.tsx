@@ -1,4 +1,4 @@
-// Small inline icons for the music player (Material Symbols paths, 24×24 viewBox).
+// Small inline icons (Material Symbols paths, 24×24 viewBox).
 
 function Icon({ d, size = 20 }: { d: string; size?: number }) {
   return (
@@ -22,3 +22,11 @@ export const VolumeIcon = () => (
 export const CloseIcon = () => (
   <Icon size={16} d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
 )
+export const EditIcon = () => (
+  <Icon
+    size={16}
+    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75z"
+  />
+)
+export const UpIcon = () => <Icon size={16} d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8z" />
+export const DownIcon = () => <Icon size={16} d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8z" />

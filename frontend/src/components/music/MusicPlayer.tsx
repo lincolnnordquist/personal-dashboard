@@ -3,7 +3,7 @@ import { useQuery } from '@apollo/client/react'
 import { GET_PLAYLISTS, type Song } from '../../graphql/queries'
 import { videoLength } from '../../format'
 import { useStoredState } from '../../lib/storage'
-import { ListIcon, NextIcon, PauseIcon, PlayIcon, PrevIcon, VolumeIcon } from './icons'
+import { ListIcon, NextIcon, PauseIcon, PlayIcon, PrevIcon, VolumeIcon } from '../icons'
 import MusicLibrary from './MusicLibrary'
 import { useCrossfadePlayer } from './useCrossfadePlayer'
 

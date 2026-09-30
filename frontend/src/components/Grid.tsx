@@ -3,6 +3,7 @@ import type { WidgetConfig } from '../graphql/queries'
 import WidgetCard from './WidgetCard'
 import CalendarWidget from './widgets/CalendarWidget'
 import DockerWidget from './widgets/DockerWidget'
+import QuickLinksWidget from './widgets/QuickLinksWidget'
 import RedditWidget from './widgets/RedditWidget'
 import SportsWidget from './widgets/SportsWidget'
 import WeatherWidget from './widgets/WeatherWidget'
@@ -14,6 +15,7 @@ export interface WidgetProps {
 
 // Widget types without an entry here render a placeholder until they are built.
 const widgetComponents: Record<string, ComponentType<WidgetProps>> = {
+  quicklinks: QuickLinksWidget,
   calendar: CalendarWidget,
   weather: WeatherWidget,
   reddit: RedditWidget,

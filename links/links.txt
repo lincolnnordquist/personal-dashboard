@@ -1,0 +1,19 @@
+# Quick links, shown in the dashboard's Quick links widget and editable there.
+# Groups start with [name]. Each link is "Title | URL", with an optional third field that
+# replaces the site's icon with an emoji or an image URL: "Title | URL | 🎮".
+
+[dev]
+GitHub | https://github.com
+Go packages | https://pkg.go.dev
+MDN | https://developer.mozilla.org
+Docker Hub | https://hub.docker.com
+Claude | https://claude.ai
+
+[sports]
+Seahawks | https://www.seahawks.com
+ESPN NFL | https://www.espn.com/nfl/ | 🏈
+r/Seahawks | https://www.reddit.com/r/Seahawks/
+
+[zelda]
+Zelda Wiki | https://zeldawiki.wiki
+Zelda Dungeon | https://www.zeldadungeon.net

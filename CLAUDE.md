@@ -20,10 +20,10 @@ This project is worked on from two machines (desktop and laptop). **STATUS.md is
 ## Running it
 
 - `docker compose up -d --build` from the repo root. Dashboard: http://localhost:7070 (set `DASHBOARD_PORT` in `.env` to change). GraphQL playground: http://localhost:7070/playground.
-- Only the frontend publishes a port. nginx (`frontend/nginx.conf`) proxies `/graphql` and `/playground` to the backend; Postgres is reachable only inside Compose: `docker compose exec postgres psql -U dashboard`.
+- Only the frontend publishes a port. nginx (`frontend/nginx.conf`) proxies `/graphql`, `/playground`, and `/icons` to the backend; Postgres is reachable only inside Compose: `docker compose exec postgres psql -U dashboard`.
 - All services use `restart: unless-stopped` and Docker starts at boot, so the dashboard comes up automatically.
 - Secrets live in `.env` (gitignored); `.env.example` is the template.
-- Content folders are bind-mounted, not baked into images: `music/playlists/` (the backend reads and writes it) and `backgrounds/<theme>/` (served by nginx, read by the backend). Changes there need no rebuild. After adding background videos, run `scripts/optimize-backgrounds.sh`.
+- Content folders are bind-mounted, not baked into images: `music/playlists/` and `links/` (the backend reads and writes them) and `backgrounds/<theme>/` (served by nginx, read by the backend). Changes there need no rebuild. After adding background videos, run `scripts/optimize-backgrounds.sh`.
 - Backend: `cd backend && go vet ./... && go test ./...`. After editing `graph/schema.graphqls`, run `go tool gqlgen generate`.
 - Frontend: `cd frontend && npm run build && npx oxlint`. `npm run dev` serves on :5173 and proxies `/graphql` to a backend on :8080 (`go run .`).
 
@@ -33,6 +33,7 @@ This project is worked on from two machines (desktop and laptop). **STATUS.md is
 - `backend/cache/postgres.go`: `GetOrFetch` does cache hit/miss/expiry and serves stale data when the upstream fails. Every cached widget goes through it.
 - `backend/refresh.go`: background refreshers, one per cached widget, run at each widget's TTL.
 - `backend/graph/schema.resolvers.go`: resolvers, kept thin. A failure in one item of a list (one subreddit, one channel) goes to `graphql.AddError` and the rest still return.
+- File-synced data (`music/`, `links/`): the files in the repo are the source of truth, reloaded when they change on disk and rewritten atomically after UI edits (`backend/fsutil`).
 - `backend/db/migrate.go`: numbered migrations recorded in `schema_migrations`. **Append new migrations; never edit a shipped one.** Seeding runs only on an empty `widget_config`.
 - `frontend/src/components/widgets/<Name>Widget.tsx`: one component per widget type, registered in `components/Grid.tsx`. `WidgetCard` renders the label above the card; tabbed widgets pass `<Tabs variant="label">` as the header.
 - Widgets are placed by `widget_config.layout_column` (left / center / right) and `position` within the column.

@@ -1,8 +1,9 @@
 # Every service restarts automatically, including after a reboot (Docker starts at boot).
 # `docker compose stop` or `down` turns the dashboard off until the next `up`.
 #
-# Only the frontend publishes a port. nginx in the frontend container forwards /graphql and
-# /playground to the backend, and the backend reaches Postgres over the Compose network.
+# Only the frontend publishes a port. nginx in the frontend container forwards /graphql,
+# /playground, and /icons to the backend, and the backend reaches Postgres over the Compose
+# network.
 services:
   postgres:
     image: postgres:15
@@ -34,10 +35,14 @@ services:
       PLAYLIST_DIR: /data/music/playlists
       # Background themes: one folder of videos per theme. nginx serves the same folder.
       BACKGROUNDS_DIR: /data/backgrounds
+      # Quick links, also in the repo. The folder (not the file) is mounted so saves can
+      # replace the file atomically.
+      LINKS_FILE: /data/links/links.txt
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./music:/data/music
       - ./backgrounds:/data/backgrounds:ro
+      - ./links:/data/links
     depends_on:
       postgres:
         condition: service_healthy

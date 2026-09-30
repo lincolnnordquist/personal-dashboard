@@ -19,6 +19,7 @@ resolver:
 autobind:
   - dashboard/backgrounds
   - dashboard/db
+  - dashboard/links
   - dashboard/widgets
 
 models:

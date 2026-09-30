@@ -8,6 +8,7 @@ import (
 	"dashboard/backgrounds"
 	"dashboard/db"
 	"dashboard/graph/model"
+	"dashboard/links"
 	"dashboard/widgets"
 	"embed"
 	"errors"
@@ -89,6 +90,7 @@ type ComplexityRoot struct {
 		DeletePlaylist     func(childComplexity int, id int) int
 		RemoveSong         func(childComplexity int, id int) int
 		RenamePlaylist     func(childComplexity int, id int, name string) int
+		SaveQuickLinks     func(childComplexity int, version string, groups []*links.QuickLinkGroupInput) int
 		SetPlaylistTheme   func(childComplexity int, id int, theme *string) int
 		ToggleWidget       func(childComplexity int, id int, enabled bool) int
 		UpdateWidgetConfig func(childComplexity int, id int, config map[string]any, position *int) int
@@ -105,6 +107,7 @@ type ComplexityRoot struct {
 		BackgroundThemes func(childComplexity int) int
 		DockerData       func(childComplexity int) int
 		Playlists        func(childComplexity int) int
+		QuickLinks       func(childComplexity int) int
 		RedditData       func(childComplexity int, subreddits []string) int
 		SportsData       func(childComplexity int, sport string, teamIds []string) int
 		Standings        func(childComplexity int, sport string) int
@@ -112,6 +115,23 @@ type ComplexityRoot struct {
 		WeatherData      func(childComplexity int, lat float64, lon float64, unit *model.TemperatureUnit, location *string) int
 		Widgets          func(childComplexity int) int
 		YoutubeData      func(childComplexity int, channelIds []string) int
+	}
+
+	QuickLink struct {
+		FaviconURL func(childComplexity int) int
+		Icon       func(childComplexity int) int
+		Title      func(childComplexity int) int
+		URL        func(childComplexity int) int
+	}
+
+	QuickLinkGroup struct {
+		Links func(childComplexity int) int
+		Name  func(childComplexity int) int
+	}
+
+	QuickLinks struct {
+		Groups  func(childComplexity int) int
+		Version func(childComplexity int) int
 	}
 
 	RedditPost struct {
@@ -231,6 +251,7 @@ type MutationResolver interface {
 	DeletePlaylist(ctx context.Context, id int) (bool, error)
 	AddSong(ctx context.Context, playlistID int, url string) (*db.Song, error)
 	RemoveSong(ctx context.Context, id int) (bool, error)
+	SaveQuickLinks(ctx context.Context, version string, groups []*links.QuickLinkGroupInput) (*links.QuickLinks, error)
 }
 type QueryResolver interface {
 	Widgets(ctx context.Context) ([]*db.WidgetConfig, error)
@@ -243,6 +264,7 @@ type QueryResolver interface {
 	DockerData(ctx context.Context) ([]*widgets.DockerContainer, error)
 	Playlists(ctx context.Context) ([]*db.Playlist, error)
 	BackgroundThemes(ctx context.Context) ([]*backgrounds.BackgroundTheme, error)
+	QuickLinks(ctx context.Context) (*links.QuickLinks, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -491,6 +513,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RenamePlaylist(childComplexity, args["id"].(int), args["name"].(string)), true
+	case "Mutation.saveQuickLinks":
+		if e.ComplexityRoot.Mutation.SaveQuickLinks == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_saveQuickLinks_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SaveQuickLinks(childComplexity, args["version"].(string), args["groups"].([]*links.QuickLinkGroupInput)), true
 	case "Mutation.setPlaylistTheme":
 		if e.ComplexityRoot.Mutation.SetPlaylistTheme == nil {
 			break
@@ -569,6 +602,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Playlists(childComplexity), true
+	case "Query.quickLinks":
+		if e.ComplexityRoot.Query.QuickLinks == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.QuickLinks(childComplexity), true
 	case "Query.redditData":
 		if e.ComplexityRoot.Query.RedditData == nil {
 			break
@@ -641,6 +680,57 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.YoutubeData(childComplexity, args["channelIds"].([]string)), true
+
+	case "QuickLink.faviconUrl":
+		if e.ComplexityRoot.QuickLink.FaviconURL == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuickLink.FaviconURL(childComplexity), true
+	case "QuickLink.icon":
+		if e.ComplexityRoot.QuickLink.Icon == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuickLink.Icon(childComplexity), true
+	case "QuickLink.title":
+		if e.ComplexityRoot.QuickLink.Title == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuickLink.Title(childComplexity), true
+	case "QuickLink.url":
+		if e.ComplexityRoot.QuickLink.URL == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuickLink.URL(childComplexity), true
+
+	case "QuickLinkGroup.links":
+		if e.ComplexityRoot.QuickLinkGroup.Links == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuickLinkGroup.Links(childComplexity), true
+	case "QuickLinkGroup.name":
+		if e.ComplexityRoot.QuickLinkGroup.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuickLinkGroup.Name(childComplexity), true
+
+	case "QuickLinks.groups":
+		if e.ComplexityRoot.QuickLinks.Groups == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuickLinks.Groups(childComplexity), true
+	case "QuickLinks.version":
+		if e.ComplexityRoot.QuickLinks.Version == nil {
+			break
+		}
+
+		return e.ComplexityRoot.QuickLinks.Version(childComplexity), true
 
 	case "RedditPost.author":
 		if e.ComplexityRoot.RedditPost.Author == nil {
@@ -1046,7 +1136,10 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputQuickLinkGroupInput,
+		ec.unmarshalInputQuickLinkInput,
+	)
 	first := true
 
 	switch opCtx.Operation.Operation {
@@ -1238,6 +1331,40 @@ func (ec *executionContext) childFields_Playlist(ctx context.Context, field grap
 		return ec.fieldContext_Playlist_songs(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Playlist", field.Name)
+}
+
+func (ec *executionContext) childFields_QuickLink(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "title":
+		return ec.fieldContext_QuickLink_title(ctx, field)
+	case "url":
+		return ec.fieldContext_QuickLink_url(ctx, field)
+	case "icon":
+		return ec.fieldContext_QuickLink_icon(ctx, field)
+	case "faviconUrl":
+		return ec.fieldContext_QuickLink_faviconUrl(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type QuickLink", field.Name)
+}
+
+func (ec *executionContext) childFields_QuickLinkGroup(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "name":
+		return ec.fieldContext_QuickLinkGroup_name(ctx, field)
+	case "links":
+		return ec.fieldContext_QuickLinkGroup_links(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type QuickLinkGroup", field.Name)
+}
+
+func (ec *executionContext) childFields_QuickLinks(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "version":
+		return ec.fieldContext_QuickLinks_version(ctx, field)
+	case "groups":
+		return ec.fieldContext_QuickLinks_groups(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type QuickLinks", field.Name)
 }
 
 func (ec *executionContext) childFields_RedditPost(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1645,6 +1772,28 @@ func (ec *executionContext) field_Mutation_renamePlaylist_args(ctx context.Conte
 		return nil, err
 	}
 	args["name"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_saveQuickLinks_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "version",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["version"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "groups",
+		func(ctx context.Context, v any) ([]*links.QuickLinkGroupInput, error) {
+			return ec.unmarshalNQuickLinkGroupInput2ᚕᚖdashboardᚋlinksᚐQuickLinkGroupInputᚄ(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["groups"] = arg1
 	return args, nil
 }
 
@@ -2952,6 +3101,50 @@ func (ec *executionContext) fieldContext_Mutation_removeSong(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_saveQuickLinks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_saveQuickLinks(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().SaveQuickLinks(ctx, fc.Args["version"].(string), fc.Args["groups"].([]*links.QuickLinkGroupInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *links.QuickLinks) graphql.Marshaler {
+			return ec.marshalNQuickLinks2ᚖdashboardᚋlinksᚐQuickLinks(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_saveQuickLinks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_QuickLinks(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_saveQuickLinks_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Playlist_id(ctx context.Context, field graphql.CollectedField, obj *db.Playlist) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3445,6 +3638,38 @@ func (ec *executionContext) fieldContext_Query_backgroundThemes(_ context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_quickLinks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_quickLinks(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().QuickLinks(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *links.QuickLinks) graphql.Marshaler {
+			return ec.marshalNQuickLinks2ᚖdashboardᚋlinksᚐQuickLinks(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_quickLinks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_QuickLinks(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -3516,6 +3741,208 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields___Schema(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QuickLink_title(ctx context.Context, field graphql.CollectedField, obj *links.QuickLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuickLink_title(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Title, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuickLink_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("QuickLink", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _QuickLink_url(ctx context.Context, field graphql.CollectedField, obj *links.QuickLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuickLink_url(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.URL, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuickLink_url(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("QuickLink", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _QuickLink_icon(ctx context.Context, field graphql.CollectedField, obj *links.QuickLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuickLink_icon(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Icon, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuickLink_icon(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("QuickLink", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _QuickLink_faviconUrl(ctx context.Context, field graphql.CollectedField, obj *links.QuickLink) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuickLink_faviconUrl(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.FaviconURL(), nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuickLink_faviconUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("QuickLink", field, true, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _QuickLinkGroup_name(ctx context.Context, field graphql.CollectedField, obj *links.QuickLinkGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuickLinkGroup_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuickLinkGroup_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("QuickLinkGroup", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _QuickLinkGroup_links(ctx context.Context, field graphql.CollectedField, obj *links.QuickLinkGroup) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuickLinkGroup_links(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Links, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*links.QuickLink) graphql.Marshaler {
+			return ec.marshalNQuickLink2ᚕᚖdashboardᚋlinksᚐQuickLinkᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuickLinkGroup_links(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuickLinkGroup",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_QuickLink(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QuickLinks_version(ctx context.Context, field graphql.CollectedField, obj *links.QuickLinks) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuickLinks_version(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Version, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuickLinks_version(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("QuickLinks", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _QuickLinks_groups(ctx context.Context, field graphql.CollectedField, obj *links.QuickLinks) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_QuickLinks_groups(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Groups, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*links.QuickLinkGroup) graphql.Marshaler {
+			return ec.marshalNQuickLinkGroup2ᚕᚖdashboardᚋlinksᚐQuickLinkGroupᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_QuickLinks_groups(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QuickLinks",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_QuickLinkGroup(ctx, field)
 		},
 	}
 	return fc, nil
@@ -6142,6 +6569,87 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputQuickLinkGroupInput(ctx context.Context, obj any) (links.QuickLinkGroupInput, error) {
+	var it links.QuickLinkGroupInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "links"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "links":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("links"))
+			data, err := ec.unmarshalNQuickLinkInput2ᚕᚖdashboardᚋlinksᚐQuickLinkInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Links = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputQuickLinkInput(ctx context.Context, obj any) (links.QuickLinkInput, error) {
+	var it links.QuickLinkInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"title", "url", "icon"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "url":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URL = data
+		case "icon":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("icon"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Icon = data
+		}
+	}
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -6531,6 +7039,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "saveQuickLinks":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_saveQuickLinks(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6845,6 +7360,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "quickLinks":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_quickLinks(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -6858,6 +7395,145 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			})
 			if out.Values[i] == graphql.RequiredNull {
 				atomic.AddUint32(&out.Invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var quickLinkImplementors = []string{"QuickLink"}
+
+func (ec *executionContext) _QuickLink(ctx context.Context, sel ast.SelectionSet, obj *links.QuickLink) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, quickLinkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QuickLink")
+		case "title":
+			out.Values[i] = ec._QuickLink_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "url":
+			out.Values[i] = ec._QuickLink_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "icon":
+			out.Values[i] = ec._QuickLink_icon(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "faviconUrl":
+			out.Values[i] = ec._QuickLink_faviconUrl(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var quickLinkGroupImplementors = []string{"QuickLinkGroup"}
+
+func (ec *executionContext) _QuickLinkGroup(ctx context.Context, sel ast.SelectionSet, obj *links.QuickLinkGroup) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, quickLinkGroupImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QuickLinkGroup")
+		case "name":
+			out.Values[i] = ec._QuickLinkGroup_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "links":
+			out.Values[i] = ec._QuickLinkGroup_links(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var quickLinksImplementors = []string{"QuickLinks"}
+
+func (ec *executionContext) _QuickLinks(ctx context.Context, sel ast.SelectionSet, obj *links.QuickLinks) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, quickLinksImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QuickLinks")
+		case "version":
+			out.Values[i] = ec._QuickLinks_version(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "groups":
+			out.Values[i] = ec._QuickLinks_groups(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -8239,6 +8915,106 @@ func (ec *executionContext) marshalNPlaylist2ᚖdashboardᚋdbᚐPlaylist(ctx co
 		return graphql.Null
 	}
 	return ec._Playlist(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNQuickLink2ᚕᚖdashboardᚋlinksᚐQuickLinkᚄ(ctx context.Context, sel ast.SelectionSet, v []*links.QuickLink) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNQuickLink2ᚖdashboardᚋlinksᚐQuickLink(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNQuickLink2ᚖdashboardᚋlinksᚐQuickLink(ctx context.Context, sel ast.SelectionSet, v *links.QuickLink) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QuickLink(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNQuickLinkGroup2ᚕᚖdashboardᚋlinksᚐQuickLinkGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []*links.QuickLinkGroup) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNQuickLinkGroup2ᚖdashboardᚋlinksᚐQuickLinkGroup(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNQuickLinkGroup2ᚖdashboardᚋlinksᚐQuickLinkGroup(ctx context.Context, sel ast.SelectionSet, v *links.QuickLinkGroup) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QuickLinkGroup(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNQuickLinkGroupInput2ᚕᚖdashboardᚋlinksᚐQuickLinkGroupInputᚄ(ctx context.Context, v any) ([]*links.QuickLinkGroupInput, error) {
+	vSlice := graphql.CoerceList(v)
+	var err error
+	res := make([]*links.QuickLinkGroupInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNQuickLinkGroupInput2ᚖdashboardᚋlinksᚐQuickLinkGroupInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNQuickLinkGroupInput2ᚖdashboardᚋlinksᚐQuickLinkGroupInput(ctx context.Context, v any) (*links.QuickLinkGroupInput, error) {
+	res, err := ec.unmarshalInputQuickLinkGroupInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNQuickLinkInput2ᚕᚖdashboardᚋlinksᚐQuickLinkInputᚄ(ctx context.Context, v any) ([]*links.QuickLinkInput, error) {
+	vSlice := graphql.CoerceList(v)
+	var err error
+	res := make([]*links.QuickLinkInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNQuickLinkInput2ᚖdashboardᚋlinksᚐQuickLinkInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNQuickLinkInput2ᚖdashboardᚋlinksᚐQuickLinkInput(ctx context.Context, v any) (*links.QuickLinkInput, error) {
+	res, err := ec.unmarshalInputQuickLinkInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNQuickLinks2ᚖdashboardᚋlinksᚐQuickLinks(ctx context.Context, sel ast.SelectionSet, v *links.QuickLinks) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._QuickLinks(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNRedditPost2ᚕᚖdashboardᚋwidgetsᚐRedditPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*widgets.RedditPost) graphql.Marshaler {

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"dashboard/db"
+	"dashboard/fsutil"
 )
 
 // Store is the database side of the playlists (db.MusicRepo in production).
@@ -295,7 +296,7 @@ func (l *Library) writeFiles(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := ensureDir(l.dir); err != nil {
+	if err := fsutil.EnsureDir(l.dir); err != nil {
 		return fmt.Errorf("create playlist folder: %w", err)
 	}
 	keep := map[string]bool{}
@@ -305,7 +306,7 @@ func (l *Library) writeFiles(ctx context.Context) error {
 			entries[i] = Entry{VideoID: s.VideoID, Title: s.Title, ChannelName: s.ChannelName}
 		}
 		header := Header{Name: p.Name, Theme: value(p.Theme)}
-		if err := writeFileAtomic(l.path(p.Slug), FormatPlaylist(header, entries)); err != nil {
+		if err := fsutil.WriteFileAtomic(l.path(p.Slug), FormatPlaylist(header, entries)); err != nil {
 			return fmt.Errorf("write playlist %s: %w", p.Slug, err)
 		}
 		keep[p.Slug] = true

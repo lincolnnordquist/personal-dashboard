@@ -424,3 +424,63 @@ export const SET_PLAYLIST_THEME: TypedDocumentNode<
     }
   }
 `
+
+export interface QuickLink {
+  title: string
+  url: string
+  // An emoji or image URL shown instead of the site's icon; empty for the site's own icon.
+  icon: string
+  faviconUrl: string
+}
+
+export interface QuickLinkGroup {
+  name: string
+  links: QuickLink[]
+}
+
+export interface QuickLinks {
+  // Changes whenever the links do; saving needs the one the editor loaded.
+  version: string
+  groups: QuickLinkGroup[]
+}
+
+const QUICK_LINK_FIELDS = gql`
+  fragment QuickLinksFields on QuickLinks {
+    version
+    groups {
+      name
+      links {
+        title
+        url
+        icon
+        faviconUrl
+      }
+    }
+  }
+`
+
+export const GET_QUICK_LINKS: TypedDocumentNode<{ quickLinks: QuickLinks }> = gql`
+  ${QUICK_LINK_FIELDS}
+  query GetQuickLinks {
+    quickLinks {
+      ...QuickLinksFields
+    }
+  }
+`
+
+export interface QuickLinkGroupInput {
+  name: string
+  links: { title: string; url: string; icon: string }[]
+}
+
+export const SAVE_QUICK_LINKS: TypedDocumentNode<
+  { saveQuickLinks: QuickLinks },
+  { version: string; groups: QuickLinkGroupInput[] }
+> = gql`
+  ${QUICK_LINK_FIELDS}
+  mutation SaveQuickLinks($version: String!, $groups: [QuickLinkGroupInput!]!) {
+    saveQuickLinks(version: $version, groups: $groups) {
+      ...QuickLinksFields
+    }
+  }
+`

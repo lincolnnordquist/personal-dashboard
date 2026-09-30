@@ -13,7 +13,7 @@ import {
   type Playlist,
   type Song,
 } from '../../graphql/queries'
-import { CloseIcon } from './icons'
+import { CloseIcon } from '../icons'
 
 const refetchQueries = [GET_PLAYLISTS]
 

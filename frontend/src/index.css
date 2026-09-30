@@ -1094,7 +1094,9 @@ body {
   gap: 6px;
 }
 
-.inline-form input {
+.inline-form input,
+.link-form input,
+.link-form select {
   flex: 1;
   min-width: 0;
   padding: 6px 10px;
@@ -1109,6 +1111,177 @@ body {
 .small {
   margin: 6px 0 0;
   font-size: 0.8rem;
+}
+
+/* A widget heading with a small action on the right, e.g. the quick links' edit button. */
+.heading-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.heading-button {
+  padding: 3px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.widget-section:hover .heading-button,
+.heading-button:focus-visible {
+  opacity: 1;
+}
+
+/* Quick links: a speed dial of site icons. */
+.quicklinks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quicklink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 2px 6px;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.quicklink:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.quicklink-title {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: rgba(230, 232, 236, 0.85);
+}
+
+.link-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  /* Light, like a browser's speed dial: many favicons are dark and assume a white page. */
+  background: rgba(236, 239, 244, 0.92);
+  border-radius: 10px;
+}
+
+.link-icon img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.link-icon-emoji {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.link-icon-letter {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #3d59a1;
+}
+
+/* Quick links editor (reuses the music library window). */
+.link-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.link-form input,
+.link-form select {
+  flex: 1 1 150px;
+}
+
+.link-form .link-form-icon {
+  flex-basis: 220px;
+}
+
+/* The group picker, shown when editing a link. */
+.link-form select {
+  flex: 0 1 180px;
+}
+
+.link-form-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.link-list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.link-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 6px;
+}
+
+.link-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.link-row.editing {
+  display: block;
+  padding: 8px;
+  background: var(--highlight);
+}
+
+.link-row .link-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  border-radius: 8px;
+}
+
+.link-row .link-icon img {
+  width: 20px;
+  height: 20px;
+}
+
+.link-row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.link-row-title,
+.link-row-url {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.link-row-title {
+  font-size: 0.85rem;
+}
+
+.link-row-url {
+  font-size: 0.75rem;
 }
 
 /* Music library: a large centered window over the dashboard. */

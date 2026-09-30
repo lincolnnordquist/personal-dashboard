@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-09-30 (laptop)_
+_Last updated: 2026-09-30 (desktop)_
 
 ## Current focus
 
@@ -10,14 +10,13 @@ Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 
 1. **Twitch channels widget.** Glance-style list: avatar, name, live/offline, game and viewers when live. Goes in the left column under Docker. Needs a Twitch app (client ID + secret) for the Helix API.
 2. **GitHub releases widget.** Repo, latest version, and age, like Glance. Goes in the right column under Weather. Works without a token (60 req/hr); an optional token raises the limit.
-3. **Quick links tile.** A grid of bookmarked sites/tools as icons, like a personal speed dial.
-4. **Quick notes / scratchpad.** One persistent text box for stray thoughts.
-5. **System stats widget.** CPU/RAM/disk (and temp if available) for the host machine.
-6. **Steam widget.** Currently-playing / recently-played, or a wishlist-sale tracker.
-7. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
-8. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
-9. **Polish (spec step 8).**
-10. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
+3. **Quick notes / scratchpad.** One persistent text box for stray thoughts.
+4. **System stats widget.** CPU/RAM/disk (and temp if available) for the host machine.
+5. **Steam widget.** Currently-playing / recently-played, or a wishlist-sale tracker.
+6. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
+7. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
+8. **Polish (spec step 8).**
+9. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
 
 ## Done
 
@@ -27,6 +26,7 @@ Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 - **Reddit**, center: r/nflv2, r/selfhosted.
 - **YouTube**, center: horizontal video row with Shorts hidden. Sample channels: @fireship @linustechtips @mkbhd @veritasium @videogamedunkey.
 - **Docker** container status, left: display only, grouped by Compose project.
+- **Quick links**, top of the left column: a speed dial of site icons on light tiles, one label tab per group (the last tab is remembered). The pencil button opens an editor window like the music library: create/rename/reorder/delete groups; add, edit, reorder, remove, or move links between groups. Each link can override its icon with an emoji or an image URL; sites with no reachable icon show their first letter. Synced as `links/links.txt` (see decisions). Code: `backend/links/`, `frontend/src/components/quicklinks/`, `QuickLinksWidget.tsx`; migration 6.
 - **Calendar**, left: month grid, ISO week, Seahawks game-day dots (win/loss/upcoming).
 - **Music player:** no video, just clean controls (song title only, no channel; seek bar, prev/play/next, volume, playlist picker, library). It only appears in focus mode, centered under the clock and date (its secondary row dims when the mouse is idle); the normal dashboard shows no player at all, but music keeps playing there. It lives in a full-screen `.stage` in `App.tsx` with the focus clock and stays mounted in both modes (`layout="hidden"` hides everything but the invisible YouTube players), so switching never interrupts playback. The music library is opened from the focus-mode player. Code is in `frontend/src/components/music/` and `backend/music/`, with `playlists` and `songs` tables (migrations 3–4).
   - **Multiple playlists.** One plays at a time, chosen with a picker on the player (remembered in localStorage). The same song can be in several playlists. Switching playlists while playing crossfades into the new one.
@@ -48,6 +48,8 @@ Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 - **YouTube:** the Data API key is sent in the `X-Goog-Api-Key` header, never in the URL. Shorts are detected as ≤180s, which also hides short trailers; that's why Nintendo was dropped as a sample. `channelIds` config accepts @handles or UC… IDs. Uses about 2 quota units per channel per hour.
 - **Music player:** uses the official YouTube IFrame API with two players that crossfade by ramping `setVolume`. The players are **hidden** (a transparent 200×200 `.music-engine` box). This goes against YouTube's embed terms, which require a visible player; the user chose it knowingly as a personal-use tradeoff (2026-09-28). Browsers keep playing hidden embeds (verified in Chrome). Songs are checked at add time through YouTube's oEmbed endpoint (no key or quota; 401 means embedding is disabled), and playback errors 101/150 are skipped with a notice.
 - **Playlist sync:** `music/playlists/<slug>.txt`, one file per playlist, is the source of truth. The folder is bind-mounted into the backend (`PLAYLIST_DIR`). The first line `# Playlist: Name` holds the display name; the slug comes from the name and renaming a playlist renames its file. Any change in the UI rewrites the files. On startup, and within 5s of any change on disk (e.g. a `git pull`), the database is made to match the folder: playlists and songs are added, renamed, and removed. Files are hand-editable: one video ID or link per line, and bare IDs get their titles looked up. The backend writes as root but chowns files to the folder's owner. The old single `music/playlist.txt` was migrated to `playlists/zelda.txt` and deleted. Code: `backend/music/library.go`, `playlist.go`; DB in `backend/db/music.go`.
+- **Quick links sync:** `links/links.txt` (committed) is the source of truth, like playlists: `[group]` headers, then `Title | URL` or `Title | URL | icon` lines; a bare URL works too. It is kept in memory (no DB table), bind-mounted as a folder (`LINKS_FILE`), reloaded within 5s of a change on disk, and rewritten on every edit in the UI. Each save sends the version (a hash of the links) the editor loaded; if the links changed since (another tab, a git pull), the save is refused and the editor reloads, so a stale tab can't wipe newer links.
+- **Favicons:** fetched by the backend (never a third-party icon service) at `/icons?site=<origin>`, proxied by nginx, and cached in the `favicons` table for 7 days (failures for 1 day, stale icons kept if a refetch fails). It picks the best `<link rel=icon>` on the home page (SVG, then largest, then apple-touch-icon), then `/favicon.ico`. Only origins that are in the links file are fetched, so the endpoint can't be used to make the backend request arbitrary URLs. Some sites block it (ESPN answers every request with a bot check), which is what the emoji/image override is for.
 - **Background themes:** `backgrounds/<theme>/*.mp4|.webm` plus optional `posters/<same-name>.jpg` stills (reduced motion) and an optional font. Code: `backend/backgrounds/`, `frontend/src/components/Background.tsx`.
   - The folder is bind-mounted into nginx (served at `/backgrounds/`) and the backend (read-only, `BACKGROUNDS_DIR`), so a new theme is just a new folder: no rebuild, a page refresh picks it up. `backgroundThemes` lists them; a playlist's theme is saved as `# Theme: <folder>` in its playlist file (migration 5 adds `playlists.theme`).
   - **Run `scripts/optimize-backgrounds.sh` after adding clips.** It converts to H.264 MP4 at ≤30fps without audio, and **never changes resolution** (an earlier version downscaled to 720p, which looked soft on the 1080p/1440p monitors). Audio-only fixes are stream-copied losslessly; finished files are skipped. It also refreshes posters older than their video and deletes posters whose video is gone.
@@ -60,4 +62,4 @@ Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 ## Setup needed on a new machine
 
 - `cp .env.example .env`, then fill in `YOUTUBE_API_KEY` (Google Cloud → YouTube Data API v3 → API key restricted to that API).
-- `docker compose up -d --build`. A fresh database seeds all widgets with defaults, and the music playlists load from `music/playlists/`. Other settings changed through the UI or playground (subreddits, YouTube channels, …) are stored in each machine's own database and are **not** synced by git.
+- `docker compose up -d --build`. A fresh database seeds all widgets with defaults, and the music playlists and quick links load from `music/playlists/` and `links/`. Other settings changed through the UI or playground (subreddits, YouTube channels, …) are stored in each machine's own database and are **not** synced by git.

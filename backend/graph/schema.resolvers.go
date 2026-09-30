@@ -10,6 +10,7 @@ import (
 	"dashboard/backgrounds"
 	"dashboard/db"
 	"dashboard/graph/model"
+	"dashboard/links"
 	"dashboard/widgets"
 	"errors"
 	"fmt"
@@ -96,6 +97,18 @@ func (r *mutationResolver) RemoveSong(ctx context.Context, id int) (bool, error)
 		return false, fmt.Errorf("song %d not found", id)
 	}
 	return err == nil, err
+}
+
+// SaveQuickLinks is the resolver for the saveQuickLinks field.
+func (r *mutationResolver) SaveQuickLinks(ctx context.Context, version string, groups []*links.QuickLinkGroupInput) (*links.QuickLinks, error) {
+	parsed, err := links.FromInput(groups)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.Links.Save(version, parsed); err != nil {
+		return nil, err
+	}
+	return r.Links.Links(), nil
 }
 
 // Widgets is the resolver for the widgets field.
@@ -215,6 +228,11 @@ func (r *queryResolver) BackgroundThemes(ctx context.Context) ([]*backgrounds.Ba
 		return []*backgrounds.BackgroundTheme{}, nil
 	}
 	return backgrounds.List(r.BackgroundsDir, "/backgrounds")
+}
+
+// QuickLinks is the resolver for the quickLinks field.
+func (r *queryResolver) QuickLinks(ctx context.Context) (*links.QuickLinks, error) {
+	return r.Links.Links(), nil
 }
 
 // Mutation returns MutationResolver implementation.

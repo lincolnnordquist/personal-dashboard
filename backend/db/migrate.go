@@ -89,6 +89,25 @@ ALTER TABLE songs ADD CONSTRAINT songs_playlist_video_key UNIQUE (playlist_id, v
 
 	// 5: each playlist can pick a background theme (a folder of videos). NULL mixes all themes.
 	`ALTER TABLE playlists ADD COLUMN theme VARCHAR(64);`,
+
+	// 6: quick links. The links themselves live in links/links.txt; this caches each site's
+	// favicon, and adds the widget to the top of the left column in existing databases.
+	`
+CREATE TABLE favicons (
+    origin TEXT PRIMARY KEY,
+    content_type TEXT NOT NULL,
+    data BYTEA NOT NULL,
+    fetched_at TIMESTAMP NOT NULL
+);
+
+UPDATE widget_config SET position = position + 1
+WHERE layout_column = 'left'
+  AND NOT EXISTS (SELECT 1 FROM widget_config WHERE widget_type = 'quicklinks');
+
+INSERT INTO widget_config (widget_type, config, position, layout_column)
+SELECT 'quicklinks', '{}', 0, 'left'
+WHERE EXISTS (SELECT 1 FROM widget_config)
+  AND NOT EXISTS (SELECT 1 FROM widget_config WHERE widget_type = 'quicklinks');`,
 }
 
 // Connect opens a connection pool, retrying while Postgres finishes starting up.
@@ -182,6 +201,7 @@ type seedWidget struct {
 // defaultWidgets are seeded in this order; each widget's position is its order within its column.
 func defaultWidgets(cfg *config.Config) []seedWidget {
 	return []seedWidget{
+		{"quicklinks", "left", map[string]any{}},
 		{"calendar", "left", map[string]any{"sport": "nfl", "team": "sea"}},
 		{"docker", "left", map[string]any{}},
 		{"sports", "center", map[string]any{"sport": "nfl", "featuredTeam": "sea", "favoriteTeams": []string{}}},

@@ -6,6 +6,7 @@ import (
 
 	"dashboard/cache"
 	"dashboard/db"
+	"dashboard/links"
 	"dashboard/music"
 	"dashboard/widgets"
 )
@@ -14,6 +15,7 @@ import (
 type Resolver struct {
 	WidgetRepo *db.WidgetRepo
 	Music      *music.Library
+	Links      *links.Store
 	// BackgroundsDir holds one folder of videos per background theme, served at /backgrounds.
 	BackgroundsDir string
 	Cache          cache.Store
