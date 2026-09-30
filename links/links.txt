@@ -2,7 +2,7 @@
 # Groups start with [name]. Each link is "Title | URL", with an optional third field that
 # replaces the site's icon with an emoji or an image URL: "Title | URL | 🎮".
 
-[dev]
+[quick]
 GitHub | https://github.com
 Go packages | https://pkg.go.dev
 MDN | https://developer.mozilla.org
