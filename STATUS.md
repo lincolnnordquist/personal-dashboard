@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-09-29 (desktop)_
+_Last updated: 2026-09-30 (laptop)_
 
 ## Current focus
 
@@ -10,10 +10,14 @@ Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 
 1. **Twitch channels widget.** Glance-style list: avatar, name, live/offline, game and viewers when live. Goes in the left column under Docker. Needs a Twitch app (client ID + secret) for the Helix API.
 2. **GitHub releases widget.** Repo, latest version, and age, like Glance. Goes in the right column under Weather. Works without a token (60 req/hr); an optional token raises the limit.
-3. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
-4. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
-5. **Polish (spec step 8).**
-6. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
+3. **Quick links tile.** A grid of bookmarked sites/tools as icons, like a personal speed dial.
+4. **Quick notes / scratchpad.** One persistent text box for stray thoughts.
+5. **System stats widget.** CPU/RAM/disk (and temp if available) for the host machine.
+6. **Steam widget.** Currently-playing / recently-played, or a wishlist-sale tracker.
+7. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
+8. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
+9. **Polish (spec step 8).**
+10. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
 
 ## Done
 
