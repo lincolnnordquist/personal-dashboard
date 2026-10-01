@@ -19,12 +19,25 @@ const (
 
 // WeatherData is bound to the GraphQL WeatherData type.
 type WeatherData struct {
-	Temperature float64 `json:"temperature"`
-	Condition   string  `json:"condition"`
-	High        float64 `json:"high"`
-	Low         float64 `json:"low"`
-	Location    string  `json:"location"`
+	Temperature float64         `json:"temperature"`
+	Condition   string          `json:"condition"`
+	High        float64         `json:"high"`
+	Low         float64         `json:"low"`
+	Location    string          `json:"location"`
+	Hourly      []HourlyWeather `json:"hourly"`
 }
+
+// HourlyWeather is bound to the GraphQL HourlyWeather type.
+type HourlyWeather struct {
+	Time                     string  `json:"time"`
+	Temperature              float64 `json:"temperature"`
+	Condition                string  `json:"condition"`
+	PrecipitationProbability int     `json:"precipitationProbability"`
+}
+
+// hourlyWindowHours is how many hours of forecast to keep, matching the Apple Weather app's
+// hourly strip.
+const hourlyWindowHours = 24
 
 type WeatherClient struct {
 	HTTP    *http.Client
@@ -77,10 +90,13 @@ func (c *WeatherClient) Fetch(ctx context.Context, lat, lon float64, unit string
 		"latitude":         {strconv.FormatFloat(lat, 'f', -1, 64)},
 		"longitude":        {strconv.FormatFloat(lon, 'f', -1, 64)},
 		"current":          {"temperature_2m,weather_code"},
+		"hourly":           {"temperature_2m,weather_code,precipitation_probability"},
 		"daily":            {"temperature_2m_max,temperature_2m_min"},
 		"temperature_unit": {tempUnit},
 		"timezone":         {"auto"},
-		"forecast_days":    {"1"},
+		// 2 days, not 1: the hourly window needs 24 hours *from the current hour*, which runs
+		// past midnight unless it's queried very early in the day.
+		"forecast_days": {"2"},
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.BaseURL+"?"+q.Encode(), nil)
@@ -105,9 +121,16 @@ func (c *WeatherClient) Fetch(ctx context.Context, lat, lon float64, unit string
 
 type openMeteoResponse struct {
 	Current struct {
+		Time        *string  `json:"time"`
 		Temperature *float64 `json:"temperature_2m"`
 		WeatherCode *int     `json:"weather_code"`
 	} `json:"current"`
+	Hourly struct {
+		Time                     []string  `json:"time"`
+		Temperature              []float64 `json:"temperature_2m"`
+		WeatherCode              []int     `json:"weather_code"`
+		PrecipitationProbability []int     `json:"precipitation_probability"`
+	} `json:"hourly"`
 	Daily struct {
 		Max []float64 `json:"temperature_2m_max"`
 		Min []float64 `json:"temperature_2m_min"`
@@ -120,7 +143,7 @@ func ParseWeather(body []byte) (*WeatherData, error) {
 	if err := json.Unmarshal(body, &r); err != nil {
 		return nil, fmt.Errorf("decode open-meteo response: %w", err)
 	}
-	if r.Current.Temperature == nil || r.Current.WeatherCode == nil {
+	if r.Current.Temperature == nil || r.Current.WeatherCode == nil || r.Current.Time == nil {
 		return nil, fmt.Errorf("open-meteo response missing current conditions")
 	}
 	if len(r.Daily.Max) == 0 || len(r.Daily.Min) == 0 {
@@ -131,7 +154,49 @@ func ParseWeather(body []byte) (*WeatherData, error) {
 		Condition:   WeatherCondition(*r.Current.WeatherCode),
 		High:        r.Daily.Max[0],
 		Low:         r.Daily.Min[0],
+		Hourly: hourlyForecast(
+			*r.Current.Time,
+			r.Hourly.Time, r.Hourly.Temperature, r.Hourly.WeatherCode, r.Hourly.PrecipitationProbability,
+		),
 	}, nil
+}
+
+// hourlyForecast finds the hourly entry matching the current hour and returns it plus the
+// following hours, up to hourlyWindowHours. Comparing the "YYYY-MM-DDTHH" prefix (rather than
+// full equality) is what lines the first entry up with "now": Open-Meteo's current.time carries
+// minutes (e.g. 14:23), but hourly.time entries always land on the hour (14:00).
+func hourlyForecast(currentTime string, times []string, temps []float64, codes []int, precipitation []int) []HourlyWeather {
+	if len(currentTime) < 13 {
+		return nil
+	}
+	currentHour := currentTime[:13]
+
+	start := -1
+	for i, t := range times {
+		if len(t) >= 13 && t[:13] >= currentHour {
+			start = i
+			break
+		}
+	}
+	if start == -1 {
+		return nil
+	}
+
+	end := min(start+hourlyWindowHours, len(times), len(temps), len(codes))
+	hourly := make([]HourlyWeather, 0, end-start)
+	for i := start; i < end; i++ {
+		precipProbability := 0
+		if i < len(precipitation) {
+			precipProbability = precipitation[i]
+		}
+		hourly = append(hourly, HourlyWeather{
+			Time:                     times[i],
+			Temperature:              temps[i],
+			Condition:                WeatherCondition(codes[i]),
+			PrecipitationProbability: precipProbability,
+		})
+	}
+	return hourly
 }
 
 // WeatherCondition maps a WMO weather code to a short description.

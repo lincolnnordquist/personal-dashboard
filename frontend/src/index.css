@@ -198,6 +198,47 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.weather-location {
+  margin-top: 2px;
+}
+
+/* Hourly strip, Apple Weather-style: scrolls horizontally, one tile per hour. */
+.weather-hourly {
+  display: flex;
+  gap: 2px;
+  margin-top: 16px;
+  padding-top: 14px;
+  padding-bottom: 2px;
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.weather-hour {
+  flex: none;
+  width: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.weather-hour-label {
+  font-size: 0.75rem;
+}
+
+.weather-hour-precip {
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  margin-top: -2px;
+}
+
+.weather-hour-temp {
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .notes-textarea {
   display: block;
   width: 100%;

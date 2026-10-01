@@ -2,8 +2,11 @@ import { useQuery } from '@apollo/client/react'
 import { GET_WEATHER, type TemperatureUnit } from '../../graphql/queries'
 import type { WidgetProps } from '../Grid'
 import WidgetCard from '../WidgetCard'
+import WeatherIcon from './WeatherIcon'
 
 const REFRESH_MS = 5 * 60 * 1000
+
+const hourFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric' })
 
 export default function WeatherWidget({ config }: WidgetProps) {
   const lat = Number(config.lat)
@@ -31,6 +34,21 @@ export default function WeatherWidget({ config }: WidgetProps) {
             H {Math.round(weather.high)}° · L {Math.round(weather.low)}°
           </div>
           <div className="weather-location muted">{weather.location || `${lat}, ${lon}`}</div>
+
+          {weather.hourly.length > 0 && (
+            <div className="weather-hourly">
+              {weather.hourly.map((h, i) => (
+                <div className="weather-hour" key={h.time}>
+                  <div className="weather-hour-label muted">{i === 0 ? 'Now' : hourFormat.format(new Date(h.time))}</div>
+                  <WeatherIcon condition={h.condition} />
+                  {h.precipitationProbability > 0 && (
+                    <div className="weather-hour-precip">{h.precipitationProbability}%</div>
+                  )}
+                  <div className="weather-hour-temp">{Math.round(h.temperature)}°</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </WidgetCard>

@@ -49,12 +49,20 @@ export const MOVE_WIDGET: TypedDocumentNode<
 
 export type TemperatureUnit = 'F' | 'C'
 
+export interface HourlyWeather {
+  time: string
+  temperature: number
+  condition: string
+  precipitationProbability: number
+}
+
 export interface WeatherData {
   temperature: number
   condition: string
   high: number
   low: number
   location: string
+  hourly: HourlyWeather[]
 }
 
 export const GET_WEATHER: TypedDocumentNode<
@@ -68,6 +76,12 @@ export const GET_WEATHER: TypedDocumentNode<
       high
       low
       location
+      hourly {
+        time
+        temperature
+        condition
+        precipitationProbability
+      }
     }
   }
 `

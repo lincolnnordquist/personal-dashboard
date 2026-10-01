@@ -64,6 +64,17 @@ type WeatherData {
   high: Float!
   low: Float!
   location: String!
+  "The next 24 hours, starting from the current hour."
+  hourly: [HourlyWeather!]!
+}
+
+type HourlyWeather {
+  "ISO 8601 local time for this hour, e.g. 2026-10-01T14:00."
+  time: String!
+  temperature: Float!
+  condition: String!
+  "Chance of precipitation, 0-100."
+  precipitationProbability: Int!
 }
 
 type SportsData {

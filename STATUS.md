@@ -13,14 +13,14 @@ Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 3. **System stats widget.** CPU/RAM/disk (and temp if available) for the host machine.
 4. **Steam widget.** Currently-playing / recently-played, or a wishlist-sale tracker.
 5. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location. (Column/position is now handled by rearrange mode, see Done.)
-6. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
+6. **Remaining Go tests (spec step 7).** ~~Weather response parsing~~ (added alongside the hourly forecast, see Done). Cache hit/miss/stale logic in `cache/postgres.go` still needs one (use a fake `Store`).
 7. **Polish (spec step 8).**
 8. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
 
 ## Done
 
 - **Infrastructure:** Docker Compose on a single port (7070) through an nginx proxy, auto-restart, versioned migrations.
-- **Weather** (Open-Meteo), right column.
+- **Weather** (Open-Meteo), right column by default (movable, see rearrange mode below): current conditions, H/L, and an Apple Weather-style hourly strip — the next 24 hours from the current one, horizontally scrollable, each tile an icon, temperature, and precipitation chance (hidden at 0%). `backend/widgets/weather.go` requests `hourly=temperature_2m,weather_code,precipitation_probability` over 2 forecast days (so the 24-hour window never runs short late in the day) and slices to the current hour using the "YYYY-MM-DDTHH" prefix of Open-Meteo's `current.time`, which carries minutes, against `hourly.time`, which doesn't. Icons: `WeatherIcon.tsx`, hand-drawn SVG (sun/cloud/rain/snow/thunder/fog) mapped from the existing `WeatherCondition` strings, not a new icon library.
 - **NFL** (ESPN), center: Seahawks tab (next game, schedule, bye week), Scores (live/final/upcoming, falls back to last week's finals), Standings (AFC/NFC toggle).
 - **Reddit**, center: r/nflv2, r/selfhosted.
 - **YouTube**, center: horizontal video row with Shorts hidden. Sample channels: @fireship @linustechtips @mkbhd @veritasium @videogamedunkey.

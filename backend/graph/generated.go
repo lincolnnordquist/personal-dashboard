@@ -84,6 +84,13 @@ type ComplexityRoot struct {
 		Winner func(childComplexity int) int
 	}
 
+	HourlyWeather struct {
+		Condition                func(childComplexity int) int
+		PrecipitationProbability func(childComplexity int) int
+		Temperature              func(childComplexity int) int
+		Time                     func(childComplexity int) int
+	}
+
 	Mutation struct {
 		AddSong            func(childComplexity int, playlistID int, url string) int
 		CreatePlaylist     func(childComplexity int, name string) int
@@ -208,6 +215,7 @@ type ComplexityRoot struct {
 	WeatherData struct {
 		Condition   func(childComplexity int) int
 		High        func(childComplexity int) int
+		Hourly      func(childComplexity int) int
 		Location    func(childComplexity int) int
 		Low         func(childComplexity int) int
 		Temperature func(childComplexity int) int
@@ -459,6 +467,31 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.GameTeam.Winner(childComplexity), true
+
+	case "HourlyWeather.condition":
+		if e.ComplexityRoot.HourlyWeather.Condition == nil {
+			break
+		}
+
+		return e.ComplexityRoot.HourlyWeather.Condition(childComplexity), true
+	case "HourlyWeather.precipitationProbability":
+		if e.ComplexityRoot.HourlyWeather.PrecipitationProbability == nil {
+			break
+		}
+
+		return e.ComplexityRoot.HourlyWeather.PrecipitationProbability(childComplexity), true
+	case "HourlyWeather.temperature":
+		if e.ComplexityRoot.HourlyWeather.Temperature == nil {
+			break
+		}
+
+		return e.ComplexityRoot.HourlyWeather.Temperature(childComplexity), true
+	case "HourlyWeather.time":
+		if e.ComplexityRoot.HourlyWeather.Time == nil {
+			break
+		}
+
+		return e.ComplexityRoot.HourlyWeather.Time(childComplexity), true
 
 	case "Mutation.addSong":
 		if e.ComplexityRoot.Mutation.AddSong == nil {
@@ -1024,6 +1057,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.WeatherData.High(childComplexity), true
+	case "WeatherData.hourly":
+		if e.ComplexityRoot.WeatherData.Hourly == nil {
+			break
+		}
+
+		return e.ComplexityRoot.WeatherData.Hourly(childComplexity), true
 	case "WeatherData.location":
 		if e.ComplexityRoot.WeatherData.Location == nil {
 			break
@@ -1332,6 +1371,20 @@ func (ec *executionContext) childFields_GameTeam(ctx context.Context, field grap
 	return nil, fmt.Errorf("no field named %q was found under type GameTeam", field.Name)
 }
 
+func (ec *executionContext) childFields_HourlyWeather(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "time":
+		return ec.fieldContext_HourlyWeather_time(ctx, field)
+	case "temperature":
+		return ec.fieldContext_HourlyWeather_temperature(ctx, field)
+	case "condition":
+		return ec.fieldContext_HourlyWeather_condition(ctx, field)
+	case "precipitationProbability":
+		return ec.fieldContext_HourlyWeather_precipitationProbability(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type HourlyWeather", field.Name)
+}
+
 func (ec *executionContext) childFields_Playlist(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "id":
@@ -1532,6 +1585,8 @@ func (ec *executionContext) childFields_WeatherData(ctx context.Context, field g
 		return ec.fieldContext_WeatherData_low(ctx, field)
 	case "location":
 		return ec.fieldContext_WeatherData_location(ctx, field)
+	case "hourly":
+		return ec.fieldContext_WeatherData_hourly(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type WeatherData", field.Name)
 }
@@ -2790,6 +2845,98 @@ func (ec *executionContext) _GameTeam_record(ctx context.Context, field graphql.
 }
 func (ec *executionContext) fieldContext_GameTeam_record(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("GameTeam", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _HourlyWeather_time(ctx context.Context, field graphql.CollectedField, obj *widgets.HourlyWeather) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_HourlyWeather_time(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Time, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_HourlyWeather_time(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("HourlyWeather", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _HourlyWeather_temperature(ctx context.Context, field graphql.CollectedField, obj *widgets.HourlyWeather) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_HourlyWeather_temperature(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Temperature, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
+			return ec.marshalNFloat2float64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_HourlyWeather_temperature(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("HourlyWeather", field, false, false, errors.New("field of type Float does not have child fields"))
+}
+
+func (ec *executionContext) _HourlyWeather_condition(ctx context.Context, field graphql.CollectedField, obj *widgets.HourlyWeather) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_HourlyWeather_condition(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Condition, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_HourlyWeather_condition(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("HourlyWeather", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _HourlyWeather_precipitationProbability(ctx context.Context, field graphql.CollectedField, obj *widgets.HourlyWeather) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_HourlyWeather_precipitationProbability(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PrecipitationProbability, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_HourlyWeather_precipitationProbability(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("HourlyWeather", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _Mutation_updateWidgetConfig(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5220,6 +5367,38 @@ func (ec *executionContext) fieldContext_WeatherData_location(_ context.Context,
 	return graphql.NewScalarFieldContext("WeatherData", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
+func (ec *executionContext) _WeatherData_hourly(ctx context.Context, field graphql.CollectedField, obj *widgets.WeatherData) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_WeatherData_hourly(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Hourly, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []widgets.HourlyWeather) graphql.Marshaler {
+			return ec.marshalNHourlyWeather2ᚕdashboardᚋwidgetsᚐHourlyWeatherᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_WeatherData_hourly(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "WeatherData",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_HourlyWeather(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _WidgetConfig_id(ctx context.Context, field graphql.CollectedField, obj *db.WidgetConfig) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -7050,6 +7229,59 @@ func (ec *executionContext) _GameTeam(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var hourlyWeatherImplementors = []string{"HourlyWeather"}
+
+func (ec *executionContext) _HourlyWeather(ctx context.Context, sel ast.SelectionSet, obj *widgets.HourlyWeather) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, hourlyWeatherImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("HourlyWeather")
+		case "time":
+			out.Values[i] = ec._HourlyWeather_time(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "temperature":
+			out.Values[i] = ec._HourlyWeather_temperature(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "condition":
+			out.Values[i] = ec._HourlyWeather_condition(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "precipitationProbability":
+			out.Values[i] = ec._HourlyWeather_precipitationProbability(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -8199,6 +8431,11 @@ func (ec *executionContext) _WeatherData(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "hourly":
+			out.Values[i] = ec._WeatherData_hourly(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8945,6 +9182,26 @@ func (ec *executionContext) marshalNGameTeam2ᚖdashboardᚋwidgetsᚐGameTeam(c
 		return graphql.Null
 	}
 	return ec._GameTeam(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNHourlyWeather2dashboardᚋwidgetsᚐHourlyWeather(ctx context.Context, sel ast.SelectionSet, v widgets.HourlyWeather) graphql.Marshaler {
+	return ec._HourlyWeather(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNHourlyWeather2ᚕdashboardᚋwidgetsᚐHourlyWeatherᚄ(ctx context.Context, sel ast.SelectionSet, v []widgets.HourlyWeather) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNHourlyWeather2dashboardᚋwidgetsᚐHourlyWeather(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v any) (int, error) {
