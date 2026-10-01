@@ -66,6 +66,10 @@ type WeatherData {
   location: String!
   "The next 24 hours, starting from the current hour."
   hourly: [HourlyWeather!]!
+  "ISO 8601 local time of the next sunrise within the hourly window, if any."
+  sunrise: String
+  "ISO 8601 local time of the next sunset within the hourly window, if any."
+  sunset: String
 }
 
 type HourlyWeather {
@@ -75,6 +79,7 @@ type HourlyWeather {
   condition: String!
   "Chance of precipitation, 0-100."
   precipitationProbability: Int!
+  isDay: Boolean!
 }
 
 type SportsData {

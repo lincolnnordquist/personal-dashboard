@@ -54,6 +54,7 @@ export interface HourlyWeather {
   temperature: number
   condition: string
   precipitationProbability: number
+  isDay: boolean
 }
 
 export interface WeatherData {
@@ -63,6 +64,8 @@ export interface WeatherData {
   low: number
   location: string
   hourly: HourlyWeather[]
+  sunrise: string | null
+  sunset: string | null
 }
 
 export const GET_WEATHER: TypedDocumentNode<
@@ -81,7 +84,10 @@ export const GET_WEATHER: TypedDocumentNode<
         temperature
         condition
         precipitationProbability
+        isDay
       }
+      sunrise
+      sunset
     }
   }
 `

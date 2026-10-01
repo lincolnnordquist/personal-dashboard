@@ -25,6 +25,10 @@ type WeatherData struct {
 	Low         float64         `json:"low"`
 	Location    string          `json:"location"`
 	Hourly      []HourlyWeather `json:"hourly"`
+	// Sunrise and Sunset are the next occurrence of each within the hourly window, if any
+	// (nil if it already passed, or is further out than the window reaches).
+	Sunrise *string `json:"sunrise"`
+	Sunset  *string `json:"sunset"`
 }
 
 // HourlyWeather is bound to the GraphQL HourlyWeather type.
@@ -33,6 +37,7 @@ type HourlyWeather struct {
 	Temperature              float64 `json:"temperature"`
 	Condition                string  `json:"condition"`
 	PrecipitationProbability int     `json:"precipitationProbability"`
+	IsDay                    bool    `json:"isDay"`
 }
 
 // hourlyWindowHours is how many hours of forecast to keep, matching the Apple Weather app's
@@ -90,8 +95,8 @@ func (c *WeatherClient) Fetch(ctx context.Context, lat, lon float64, unit string
 		"latitude":         {strconv.FormatFloat(lat, 'f', -1, 64)},
 		"longitude":        {strconv.FormatFloat(lon, 'f', -1, 64)},
 		"current":          {"temperature_2m,weather_code"},
-		"hourly":           {"temperature_2m,weather_code,precipitation_probability"},
-		"daily":            {"temperature_2m_max,temperature_2m_min"},
+		"hourly":           {"temperature_2m,weather_code,precipitation_probability,is_day"},
+		"daily":            {"temperature_2m_max,temperature_2m_min,sunrise,sunset"},
 		"temperature_unit": {tempUnit},
 		"timezone":         {"auto"},
 		// 2 days, not 1: the hourly window needs 24 hours *from the current hour*, which runs
@@ -130,10 +135,13 @@ type openMeteoResponse struct {
 		Temperature              []float64 `json:"temperature_2m"`
 		WeatherCode              []int     `json:"weather_code"`
 		PrecipitationProbability []int     `json:"precipitation_probability"`
+		IsDay                    []int     `json:"is_day"`
 	} `json:"hourly"`
 	Daily struct {
-		Max []float64 `json:"temperature_2m_max"`
-		Min []float64 `json:"temperature_2m_min"`
+		Max     []float64 `json:"temperature_2m_max"`
+		Min     []float64 `json:"temperature_2m_min"`
+		Sunrise []string  `json:"sunrise"`
+		Sunset  []string  `json:"sunset"`
 	} `json:"daily"`
 }
 
@@ -149,23 +157,48 @@ func ParseWeather(body []byte) (*WeatherData, error) {
 	if len(r.Daily.Max) == 0 || len(r.Daily.Min) == 0 {
 		return nil, fmt.Errorf("open-meteo response missing daily high/low")
 	}
-	return &WeatherData{
+	data := &WeatherData{
 		Temperature: *r.Current.Temperature,
 		Condition:   WeatherCondition(*r.Current.WeatherCode),
 		High:        r.Daily.Max[0],
 		Low:         r.Daily.Min[0],
 		Hourly: hourlyForecast(
 			*r.Current.Time,
-			r.Hourly.Time, r.Hourly.Temperature, r.Hourly.WeatherCode, r.Hourly.PrecipitationProbability,
+			r.Hourly.Time, r.Hourly.Temperature, r.Hourly.WeatherCode, r.Hourly.PrecipitationProbability, r.Hourly.IsDay,
 		),
-	}, nil
+	}
+	if current, err := time.Parse(openMeteoTimeLayout, *r.Current.Time); err == nil {
+		windowEnd := current.Add(hourlyWindowHours * time.Hour)
+		data.Sunrise = nextSunEvent(r.Daily.Sunrise, current, windowEnd)
+		data.Sunset = nextSunEvent(r.Daily.Sunset, current, windowEnd)
+	}
+	return data, nil
+}
+
+// openMeteoTimeLayout matches Open-Meteo's ISO 8601 local timestamps, e.g. "2026-10-01T16:00".
+const openMeteoTimeLayout = "2006-01-02T15:04"
+
+// nextSunEvent returns whichever of today's/tomorrow's sunrise or sunset (times, one of
+// Daily.Sunrise/Daily.Sunset) falls at or after current and before windowEnd -- i.e. the one
+// that belongs in the hourly window, not one already past or further out than it reaches.
+func nextSunEvent(times []string, current, windowEnd time.Time) *string {
+	for _, t := range times {
+		parsed, err := time.Parse(openMeteoTimeLayout, t)
+		if err != nil {
+			continue
+		}
+		if !parsed.Before(current) && parsed.Before(windowEnd) {
+			return &t
+		}
+	}
+	return nil
 }
 
 // hourlyForecast finds the hourly entry matching the current hour and returns it plus the
 // following hours, up to hourlyWindowHours. Comparing the "YYYY-MM-DDTHH" prefix (rather than
 // full equality) is what lines the first entry up with "now": Open-Meteo's current.time carries
 // minutes (e.g. 14:23), but hourly.time entries always land on the hour (14:00).
-func hourlyForecast(currentTime string, times []string, temps []float64, codes []int, precipitation []int) []HourlyWeather {
+func hourlyForecast(currentTime string, times []string, temps []float64, codes []int, precipitation []int, isDay []int) []HourlyWeather {
 	if len(currentTime) < 13 {
 		return nil
 	}
@@ -189,11 +222,18 @@ func hourlyForecast(currentTime string, times []string, temps []float64, codes [
 		if i < len(precipitation) {
 			precipProbability = precipitation[i]
 		}
+		// Default to day if the data's missing, so a clear sky falls back to the sun icon
+		// rather than the moon.
+		day := true
+		if i < len(isDay) {
+			day = isDay[i] != 0
+		}
 		hourly = append(hourly, HourlyWeather{
 			Time:                     times[i],
 			Temperature:              temps[i],
 			Condition:                WeatherCondition(codes[i]),
 			PrecipitationProbability: precipProbability,
+			IsDay:                    day,
 		})
 	}
 	return hourly

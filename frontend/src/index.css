@@ -239,6 +239,14 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.weather-sun-event {
+  color: var(--warn);
+}
+
+.weather-sun-event .weather-hour-temp {
+  font-size: 0.8rem;
+}
+
 .notes-textarea {
   display: block;
   width: 100%;

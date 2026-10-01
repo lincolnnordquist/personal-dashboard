@@ -12,6 +12,10 @@ function Sun() {
   )
 }
 
+function Moon() {
+  return <path fill="currentColor" d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5" />
+}
+
 function Cloud({ muted = false }: { muted?: boolean }) {
   return (
     <path
@@ -22,12 +26,10 @@ function Cloud({ muted = false }: { muted?: boolean }) {
   )
 }
 
-function CloudSun() {
+function CloudSun({ isDay }: { isDay: boolean }) {
   return (
     <>
-      <g transform="translate(-2.5,-2.5) scale(0.62)">
-        <Sun />
-      </g>
+      <g transform="translate(-2.5,-2.5) scale(0.62)">{isDay ? <Sun /> : <Moon />}</g>
       <Cloud />
     </>
   )
@@ -67,15 +69,17 @@ function Fog() {
   )
 }
 
-// condition is the free-text string from WeatherCondition, e.g. "Rain Showers".
-export default function WeatherIcon({ condition, size = 22 }: { condition: string; size?: number }) {
+// condition is the free-text string from WeatherCondition, e.g. "Rain Showers". isDay only
+// changes the icon for the clear-sky cases (sun vs. moon) -- other conditions (rain, snow,
+// overcast, ...) look the same at night in most weather apps, this one included.
+export default function WeatherIcon({ condition, isDay, size = 22 }: { condition: string; isDay: boolean; size?: number }) {
   const body = (() => {
     switch (condition) {
       case 'Clear':
       case 'Mostly Clear':
-        return <Sun />
+        return isDay ? <Sun /> : <Moon />
       case 'Partly Cloudy':
-        return <CloudSun />
+        return <CloudSun isDay={isDay} />
       case 'Fog':
         return (
           <>
@@ -131,6 +135,20 @@ export default function WeatherIcon({ condition, size = 22 }: { condition: strin
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
       {body}
+    </svg>
+  )
+}
+
+// A sun bisected by the horizon, used for both the sunrise and sunset tiles in the hourly strip
+// (same glyph Apple Weather uses for both -- the label text is what tells them apart).
+export function SunHorizonIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+      <path fill="currentColor" d="M8 16a4 4 0 0 1 8 0z" />
+      <g stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+        <path d="M12 7v3M5.5 10.5l1.8 1.8M18.5 10.5l-1.8 1.8" />
+        <path d="M3 16h18" />
+      </g>
     </svg>
   )
 }
