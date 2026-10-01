@@ -1151,36 +1151,6 @@ body {
   opacity: 1;
 }
 
-/* The widget needs its own stacking context for the drag handle badge below to anchor to. */
-.widget-section {
-  position: relative;
-}
-
-/* A small badge poking out of the card's corner, clear of whatever's in the heading itself
-   (tabs, the quick-links edit pencil, ...). Drag it to move the widget around the grid. */
-.drag-handle {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  z-index: 2;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(6px);
-  cursor: grab;
-  touch-action: none;
-}
-
-.drag-handle:active {
-  cursor: grabbing;
-}
-
-/* No hover on touch, so the handle must stay visible to be discoverable there. */
-@media (hover: none) {
-  .drag-handle {
-    opacity: 1;
-  }
-}
-
 .widget-drag-preview {
   width: 280px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
@@ -1189,6 +1159,71 @@ body {
 
 .widget-drag-preview .widget {
   min-height: 80px;
+}
+
+/* Rearrange mode: the corner button that enters/leaves it (mirrors .focus-toggle, opposite
+   corner), and every card wiggling and grabbable while it's on, like rearranging iPhone apps. */
+.rearrange-toggle {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  z-index: 15;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: var(--text);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+
+.rearrange-toggle:hover {
+  background: rgba(40, 44, 54, 0.85);
+}
+
+.rearrange-toggle.active {
+  color: var(--bg);
+  background: var(--accent);
+}
+
+.rearrange-toggle.active:hover {
+  background: var(--accent);
+}
+
+.sortable-widget.dragging {
+  z-index: 3;
+}
+
+.columns-editing .widget-section {
+  cursor: grab;
+  animation: widget-wiggle 0.2s ease-in-out infinite alternate;
+}
+
+.columns-editing .sortable-widget:nth-child(even) .widget-section {
+  animation-direction: alternate-reverse;
+}
+
+.columns-editing .sortable-widget.dragging .widget-section {
+  animation: none;
+  cursor: grabbing;
+}
+
+@keyframes widget-wiggle {
+  from {
+    transform: rotate(-0.6deg);
+  }
+  to {
+    transform: rotate(0.6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .columns-editing .widget-section {
+    animation: none;
+  }
 }
 
 /* Quick links: a speed dial of site icons. */

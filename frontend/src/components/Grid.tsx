@@ -16,7 +16,8 @@ import {
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { MOVE_WIDGET, type WidgetConfig } from '../graphql/queries'
-import { DragHandleContext } from './dragHandle'
+import { shortcutsBlocked } from '../lib/keyboard'
+import { CloseIcon, DragHandleIcon } from './icons'
 import WidgetCard from './WidgetCard'
 import CalendarWidget from './widgets/CalendarWidget'
 import DockerWidget from './widgets/DockerWidget'
@@ -59,6 +60,10 @@ const COLUMNS = ['left', 'center', 'right'] as const
 type Column = (typeof COLUMNS)[number]
 type Layout = Record<Column, number[]>
 
+function isColumn(id: string | number): id is Column {
+  return (COLUMNS as readonly (string | number)[]).includes(id)
+}
+
 function layoutFromWidgets(widgets: WidgetConfig[]): Layout {
   const layout: Layout = { left: [], center: [], right: [] }
   for (const column of COLUMNS) {
@@ -73,18 +78,20 @@ function layoutFromWidgets(widgets: WidgetConfig[]): Layout {
 // Which column (if any) currently holds this id -- an item id, or a column id when it's the
 // container itself (an empty column, or dropped in the gap below the last item).
 function columnOf(layout: Layout, id: number | string): Column | null {
-  if ((COLUMNS as readonly string[]).includes(id as string)) return id as Column
+  if (isColumn(id)) return id
   for (const column of COLUMNS) if (layout[column].includes(Number(id))) return column
   return null
 }
 
-// Three columns, Glance-style: narrow sides for small widgets, a wide center for feeds. Each
-// widget can be dragged by the handle in its corner to any position in any column; the move is
-// applied locally right away and saved to the backend when the drag ends.
+// Three columns, Glance-style: narrow sides for small widgets, a wide center for feeds. The
+// "rearrange" button puts the grid into edit mode: every card wiggles and can be dragged by
+// grabbing anywhere on it, to any position in any column, like rearranging iPhone apps. Esc or
+// the same button leaves edit mode.
 export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
   const [moveWidget] = useMutation(MOVE_WIDGET)
   const [layout, setLayout] = useState(() => layoutFromWidgets(widgets))
   const [activeId, setActiveId] = useState<number | null>(null)
+  const [editing, setEditing] = useState(false)
   const byId = new Map(widgets.map((w) => [w.id, w]))
 
   // Stay in sync with the server (e.g. a widget toggled elsewhere) except mid-drag, where this
@@ -92,6 +99,15 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
   useEffect(() => {
     if (activeId === null) setLayout(layoutFromWidgets(widgets))
   }, [widgets, activeId])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (shortcutsBlocked(e)) return
+      if (e.key === 'Escape' && editing) setEditing(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [editing])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -103,19 +119,24 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
   }
 
   // Dragging across a column boundary moves the item between the two columns' arrays right
-  // away, so the layout visibly reflows as you drag instead of only snapping on drop.
+  // away, so the layout visibly reflows as you drag instead of only snapping on drop. Everything
+  // here reads from `prev`, not the `layout` in closure scope: onDragOver can fire several times
+  // before React re-renders, and resolving columns from a stale `layout` let the same widget get
+  // inserted into two columns at once, which crashed the page.
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event
     if (!over) return
     const activeId = Number(active.id)
-    const fromColumn = columnOf(layout, activeId)
-    const toColumn = columnOf(layout, over.id)
-    if (!fromColumn || !toColumn || fromColumn === toColumn) return
+    const overId = over.id
 
     setLayout((prev) => {
+      const fromColumn = columnOf(prev, activeId)
+      const toColumn = columnOf(prev, overId)
+      if (!fromColumn || !toColumn || fromColumn === toColumn) return prev
+
       const from = prev[fromColumn].filter((id) => id !== activeId)
       const to = [...prev[toColumn]]
-      const overIndex = to.indexOf(Number(over.id))
+      const overIndex = to.indexOf(Number(overId))
       to.splice(overIndex >= 0 ? overIndex : to.length, 0, activeId)
       return { ...prev, [fromColumn]: from, [toColumn]: to }
     })
@@ -126,24 +147,22 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
     const { active, over } = event
     if (!over) return
     const activeId = Number(active.id)
+    // By drag end there's been one render per onDragOver already, so `layout` is current; the
+    // item is already in its destination column's array either way (onDragOver put it there for
+    // a cross-column move, and it was there all along for a same-column reorder).
     const column = columnOf(layout, over.id)
     if (!column) return
 
-    // A same-column drop still needs its final reorder applied; a cross-column one was already
-    // moved live by handleDragOver, so `layout` already has it in the right place.
-    let items = layout[column]
-    if (columnOf(layout, activeId) === column) {
-      const oldIndex = items.indexOf(activeId)
-      const newIndex = (COLUMNS as readonly string[]).includes(String(over.id))
-        ? items.length - 1
-        : items.indexOf(Number(over.id))
-      if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-        items = arrayMove(items, oldIndex, newIndex)
-        setLayout((prev) => ({ ...prev, [column]: items }))
-      }
+    const items = layout[column]
+    const oldIndex = items.indexOf(activeId)
+    if (oldIndex === -1) return
+    const newIndex = isColumn(over.id) ? items.length - 1 : items.indexOf(Number(over.id))
+    const finalItems = newIndex === -1 || newIndex === oldIndex ? items : arrayMove(items, oldIndex, newIndex)
+    if (finalItems !== items) {
+      setLayout((prev) => ({ ...prev, [column]: finalItems }))
     }
 
-    const position = items.indexOf(activeId)
+    const position = finalItems.indexOf(activeId)
     moveWidget({ variables: { id: activeId, column, position } }).catch(() => {
       setLayout(layoutFromWidgets(widgets))
     })
@@ -152,48 +171,59 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
   const activeWidget = activeId !== null ? byId.get(activeId) : undefined
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="columns">
-        {COLUMNS.map((column) => (
-          <DroppableColumn key={column} id={column}>
-            <SortableContext items={layout[column]} strategy={verticalListSortingStrategy}>
-              {layout[column].map((id) => {
-                const w = byId.get(id)
-                if (!w) return null
-                const Widget = widgetComponents[w.widgetType]
-                return (
-                  <SortableWidget key={id} id={id}>
-                    {Widget ? (
-                      <Widget id={w.id} config={w.config} />
-                    ) : (
-                      <WidgetCard title={w.widgetType}>
-                        <p className="muted">Coming soon</p>
-                      </WidgetCard>
-                    )}
-                  </SortableWidget>
-                )
-              })}
-            </SortableContext>
-          </DroppableColumn>
-        ))}
-      </div>
-      <DragOverlay>
-        {activeWidget && (
-          <section className="widget-section widget-drag-preview">
-            <div className="widget-heading">
-              <h2 className="widget-title">{WIDGET_LABELS[activeWidget.widgetType] ?? activeWidget.widgetType}</h2>
-            </div>
-            <div className="widget" />
-          </section>
-        )}
-      </DragOverlay>
-    </DndContext>
+    <>
+      <button
+        className={editing ? 'rearrange-toggle active' : 'rearrange-toggle'}
+        onClick={() => setEditing((v) => !v)}
+        aria-pressed={editing}
+        aria-label={editing ? 'Done rearranging (Esc)' : 'Rearrange widgets'}
+        title={editing ? 'Done rearranging (Esc)' : 'Rearrange widgets'}
+      >
+        {editing ? <CloseIcon /> : <DragHandleIcon />}
+      </button>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className={editing ? 'columns columns-editing' : 'columns'}>
+          {COLUMNS.map((column) => (
+            <DroppableColumn key={column} id={column}>
+              <SortableContext items={layout[column]} strategy={verticalListSortingStrategy}>
+                {layout[column].map((id) => {
+                  const w = byId.get(id)
+                  if (!w) return null
+                  const Widget = widgetComponents[w.widgetType]
+                  return (
+                    <SortableWidget key={id} id={id} editing={editing}>
+                      {Widget ? (
+                        <Widget id={w.id} config={w.config} />
+                      ) : (
+                        <WidgetCard title={w.widgetType}>
+                          <p className="muted">Coming soon</p>
+                        </WidgetCard>
+                      )}
+                    </SortableWidget>
+                  )
+                })}
+              </SortableContext>
+            </DroppableColumn>
+          ))}
+        </div>
+        <DragOverlay>
+          {activeWidget && (
+            <section className="widget-section widget-drag-preview">
+              <div className="widget-heading">
+                <h2 className="widget-title">{WIDGET_LABELS[activeWidget.widgetType] ?? activeWidget.widgetType}</h2>
+              </div>
+              <div className="widget" />
+            </section>
+          )}
+        </DragOverlay>
+      </DndContext>
+    </>
   )
 }
 
@@ -206,9 +236,10 @@ function DroppableColumn({ id, children }: { id: Column; children: ReactNode }) 
   )
 }
 
-function SortableWidget({ id, children }: { id: number; children: ReactNode }) {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+function SortableWidget({ id, editing, children }: { id: number; editing: boolean; children: ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
+    disabled: !editing,
   })
   const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -216,10 +247,14 @@ function SortableWidget({ id, children }: { id: number; children: ReactNode }) {
     opacity: isDragging ? 0.4 : 1,
   }
   return (
-    <div ref={setNodeRef} style={style}>
-      <DragHandleContext.Provider value={{ attributes, listeners, setActivatorNodeRef }}>
-        {children}
-      </DragHandleContext.Provider>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={isDragging ? 'sortable-widget dragging' : 'sortable-widget'}
+      {...(editing ? attributes : {})}
+      {...(editing ? listeners : {})}
+    >
+      {children}
     </div>
   )
 }
