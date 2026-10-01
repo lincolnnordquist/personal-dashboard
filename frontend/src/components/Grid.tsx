@@ -158,10 +158,11 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
               if (!w) return null
               const Widget = widgetComponents[w.widgetType]
               const selected = editing && selectedId === id
+              const className = editing ? (selected ? 'editable-widget selected' : 'editable-widget') : undefined
               return (
                 <div
                   key={id}
-                  className={selected ? 'editable-widget selected' : 'editable-widget'}
+                  className={className}
                   onClick={editing ? () => setSelectedId((cur) => (cur === id ? null : id)) : undefined}
                 >
                   {Widget ? (
