@@ -107,6 +107,24 @@ body {
   min-width: 0;
 }
 
+/* An empty column has no children and no height, so there's nothing for a drag to land on --
+   it becomes permanently impossible to drop anything into. Reserve some height while rearrange
+   mode is on, whether or not the column currently has anything in it. */
+.columns-editing .column {
+  min-height: 140px;
+}
+
+.column-drop-hint {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 140px;
+  border: 2px dashed var(--glass-border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .column-left {
   grid-area: left;
 }

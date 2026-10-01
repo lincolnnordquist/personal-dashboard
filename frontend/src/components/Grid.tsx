@@ -1,9 +1,10 @@
-import { type ComponentType, type CSSProperties, type ReactNode, useEffect, useState } from 'react'
+import { type ComponentType, type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react'
 import { useMutation } from '@apollo/client/react'
 import {
   closestCorners,
   DndContext,
   DragOverlay,
+  MeasuringStrategy,
   PointerSensor,
   TouchSensor,
   useDroppable,
@@ -94,10 +95,22 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
   const [editing, setEditing] = useState(false)
   const byId = new Map(widgets.map((w) => [w.id, w]))
 
+  // The source of truth while dragging. onDragOver and onDragEnd can both fire, sometimes more
+  // than once each, before React commits a single re-render -- reading `layout` (state) directly
+  // in those handlers meant some of those calls saw a stale snapshot from before an earlier call
+  // in the same batch had applied. A wide, item-dense column (the center one) generates far more
+  // of these events per drag, which is why that was the one that kept crashing. The ref is
+  // mutated synchronously, so every handler call sees exactly what the last one left behind.
+  const layoutRef = useRef(layout)
+  function applyLayout(next: Layout) {
+    layoutRef.current = next
+    setLayout(next)
+  }
+
   // Stay in sync with the server (e.g. a widget toggled elsewhere) except mid-drag, where this
   // would fight the optimistic reorder below.
   useEffect(() => {
-    if (activeId === null) setLayout(layoutFromWidgets(widgets))
+    if (activeId === null) applyLayout(layoutFromWidgets(widgets))
   }, [widgets, activeId])
 
   useEffect(() => {
@@ -119,27 +132,23 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
   }
 
   // Dragging across a column boundary moves the item between the two columns' arrays right
-  // away, so the layout visibly reflows as you drag instead of only snapping on drop. Everything
-  // here reads from `prev`, not the `layout` in closure scope: onDragOver can fire several times
-  // before React re-renders, and resolving columns from a stale `layout` let the same widget get
-  // inserted into two columns at once, which crashed the page.
+  // away, so the layout visibly reflows as you drag instead of only snapping on drop.
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event
     if (!over) return
     const activeId = Number(active.id)
     const overId = over.id
 
-    setLayout((prev) => {
-      const fromColumn = columnOf(prev, activeId)
-      const toColumn = columnOf(prev, overId)
-      if (!fromColumn || !toColumn || fromColumn === toColumn) return prev
+    const prev = layoutRef.current
+    const fromColumn = columnOf(prev, activeId)
+    const toColumn = columnOf(prev, overId)
+    if (!fromColumn || !toColumn || fromColumn === toColumn) return
 
-      const from = prev[fromColumn].filter((id) => id !== activeId)
-      const to = [...prev[toColumn]]
-      const overIndex = to.indexOf(Number(overId))
-      to.splice(overIndex >= 0 ? overIndex : to.length, 0, activeId)
-      return { ...prev, [fromColumn]: from, [toColumn]: to }
-    })
+    const from = prev[fromColumn].filter((id) => id !== activeId)
+    const to = [...prev[toColumn]]
+    const overIndex = to.indexOf(Number(overId))
+    to.splice(overIndex >= 0 ? overIndex : to.length, 0, activeId)
+    applyLayout({ ...prev, [fromColumn]: from, [toColumn]: to })
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -147,24 +156,24 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
     const { active, over } = event
     if (!over) return
     const activeId = Number(active.id)
-    // By drag end there's been one render per onDragOver already, so `layout` is current; the
-    // item is already in its destination column's array either way (onDragOver put it there for
-    // a cross-column move, and it was there all along for a same-column reorder).
-    const column = columnOf(layout, over.id)
+    // The item is already in its destination column's array either way (onDragOver put it there
+    // for a cross-column move, and it was there all along for a same-column reorder).
+    const prev = layoutRef.current
+    const column = columnOf(prev, over.id)
     if (!column) return
 
-    const items = layout[column]
+    const items = prev[column]
     const oldIndex = items.indexOf(activeId)
     if (oldIndex === -1) return
     const newIndex = isColumn(over.id) ? items.length - 1 : items.indexOf(Number(over.id))
     const finalItems = newIndex === -1 || newIndex === oldIndex ? items : arrayMove(items, oldIndex, newIndex)
     if (finalItems !== items) {
-      setLayout((prev) => ({ ...prev, [column]: finalItems }))
+      applyLayout({ ...prev, [column]: finalItems })
     }
 
     const position = finalItems.indexOf(activeId)
     moveWidget({ variables: { id: activeId, column, position } }).catch(() => {
-      setLayout(layoutFromWidgets(widgets))
+      applyLayout(layoutFromWidgets(widgets))
     })
   }
 
@@ -184,13 +193,17 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
+        // The center column's widgets (Reddit, YouTube, Sports) load their content
+        // asynchronously and can resize mid-drag; re-measuring continuously instead of once at
+        // drag start keeps collision detection accurate if that happens.
+        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
         <div className={editing ? 'columns columns-editing' : 'columns'}>
           {COLUMNS.map((column) => (
-            <DroppableColumn key={column} id={column}>
+            <DroppableColumn key={column} id={column} showHint={editing && layout[column].length === 0}>
               <SortableContext items={layout[column]} strategy={verticalListSortingStrategy}>
                 {layout[column].map((id) => {
                   const w = byId.get(id)
@@ -227,11 +240,20 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
   )
 }
 
-function DroppableColumn({ id, children }: { id: Column; children: ReactNode }) {
+function DroppableColumn({
+  id,
+  showHint,
+  children,
+}: {
+  id: Column
+  showHint: boolean
+  children: ReactNode
+}) {
   const { setNodeRef } = useDroppable({ id })
   return (
     <div ref={setNodeRef} className={`column column-${id}`}>
       {children}
+      {showHint && <div className="column-drop-hint">Drop a widget here</div>}
     </div>
   )
 }
