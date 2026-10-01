@@ -1,7 +1,7 @@
 import { type ComponentType, type CSSProperties, type ReactNode, useEffect, useState } from 'react'
 import { useMutation } from '@apollo/client/react'
 import {
-  closestCenter,
+  closestCorners,
   DndContext,
   DragOverlay,
   PointerSensor,
@@ -183,7 +183,7 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
       </button>
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
