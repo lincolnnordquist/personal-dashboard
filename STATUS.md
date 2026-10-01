@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-09-30 (desktop)_
+_Last updated: 2026-10-01 (laptop)_
 
 ## Current focus
 
@@ -10,13 +10,12 @@ Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 
 1. **Twitch channels widget.** Glance-style list: avatar, name, live/offline, game and viewers when live. Goes in the left column under Docker. Needs a Twitch app (client ID + secret) for the Helix API.
 2. **GitHub releases widget.** Repo, latest version, and age, like Glance. Goes in the right column under Weather. Works without a token (60 req/hr); an optional token raises the limit.
-3. **Quick notes / scratchpad.** One persistent text box for stray thoughts.
-4. **System stats widget.** CPU/RAM/disk (and temp if available) for the host machine.
-5. **Steam widget.** Currently-playing / recently-played, or a wishlist-sale tracker.
-6. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
-7. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
-8. **Polish (spec step 8).**
-9. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
+3. **System stats widget.** CPU/RAM/disk (and temp if available) for the host machine.
+4. **Steam widget.** Currently-playing / recently-played, or a wishlist-sale tracker.
+5. **Widget editor (spec step 6).** Edit each widget's config in the UI: subreddits, YouTube channels, featured team, location, and column/position.
+6. **Remaining Go tests (spec step 7).** Weather response parsing, and cache hit/miss/stale logic in `cache/postgres.go` (use a fake `Store`).
+7. **Polish (spec step 8).**
+8. **Maybe later:** Google Calendar events on the calendar (needs OAuth); NBA in the sports widget (one line in `sportPaths` in `sports.go`).
 
 ## Done
 
@@ -28,6 +27,7 @@ Nothing in progress. Next up is the **Twitch channels** widget (backlog item 1).
 - **Docker** container status, left: display only, grouped by Compose project.
 - **Quick links**, top of the left column: a speed dial of site icons on light tiles, one label tab per group (the last tab is remembered). The pencil button opens an editor window like the music library: create/rename/reorder/delete groups; add, edit, reorder, remove, or move links between groups. Each link can override its icon with an emoji or an image URL; sites with no reachable icon show their first letter. Synced as `links/links.txt` (see decisions). Code: `backend/links/`, `frontend/src/components/quicklinks/`, `QuickLinksWidget.tsx`; migration 6.
 - **Calendar**, left: month grid, ISO week, Seahawks game-day dots (win/loss/upcoming).
+- **Notes**, right column under Weather: a single scratchpad textarea, autosaved 600ms after typing stops (or on blur). Local only — not synced between machines, stored as `{"content": "..."}` in the widget's own config via the existing `updateWidgetConfig` mutation, so there's no new table. Code: `NotesWidget.tsx`; migration 7.
 - **Music player:** no video, just clean controls (song title only, no channel; seek bar, prev/play/next, volume, playlist picker, library). It only appears in focus mode, centered under the clock and date (its secondary row dims when the mouse is idle); the normal dashboard shows no player at all, but music keeps playing there. It lives in a full-screen `.stage` in `App.tsx` with the focus clock and stays mounted in both modes (`layout="hidden"` hides everything but the invisible YouTube players), so switching never interrupts playback. The music library is opened from the focus-mode player. Code is in `frontend/src/components/music/` and `backend/music/`, with `playlists` and `songs` tables (migrations 3–4).
   - **Multiple playlists.** One plays at a time, chosen with a picker on the player (remembered in localStorage). The same song can be in several playlists. Switching playlists while playing crossfades into the new one.
   - **Music library window** (☰ button): a centered window with playlists on the left (create) and the selected playlist's songs on the right (rename, delete with confirmation, add by pasting a YouTube link, remove, click a song to play it). Esc or the backdrop closes it.

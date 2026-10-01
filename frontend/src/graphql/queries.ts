@@ -22,6 +22,18 @@ export const GET_WIDGETS: TypedDocumentNode<{ widgets: WidgetConfig[] }> = gql`
   }
 `
 
+export const UPDATE_WIDGET_CONFIG: TypedDocumentNode<
+  { updateWidgetConfig: { id: number; config: Record<string, unknown> } },
+  { id: number; config: Record<string, unknown> }
+> = gql`
+  mutation UpdateWidgetConfig($id: Int!, $config: JSON!) {
+    updateWidgetConfig(id: $id, config: $config) {
+      id
+      config
+    }
+  }
+`
+
 export type TemperatureUnit = 'F' | 'C'
 
 export interface WeatherData {

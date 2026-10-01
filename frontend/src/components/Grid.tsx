@@ -3,6 +3,7 @@ import type { WidgetConfig } from '../graphql/queries'
 import WidgetCard from './WidgetCard'
 import CalendarWidget from './widgets/CalendarWidget'
 import DockerWidget from './widgets/DockerWidget'
+import NotesWidget from './widgets/NotesWidget'
 import QuickLinksWidget from './widgets/QuickLinksWidget'
 import RedditWidget from './widgets/RedditWidget'
 import SportsWidget from './widgets/SportsWidget'
@@ -10,6 +11,7 @@ import WeatherWidget from './widgets/WeatherWidget'
 import YouTubeWidget from './widgets/YouTubeWidget'
 
 export interface WidgetProps {
+  id: number
   config: Record<string, unknown>
 }
 
@@ -22,6 +24,7 @@ const widgetComponents: Record<string, ComponentType<WidgetProps>> = {
   sports: SportsWidget,
   docker: DockerWidget,
   youtube: YouTubeWidget,
+  notes: NotesWidget,
 }
 
 const COLUMNS = ['left', 'center', 'right'] as const
@@ -38,7 +41,7 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
             .map((w) => {
               const Widget = widgetComponents[w.widgetType]
               return Widget ? (
-                <Widget key={w.id} config={w.config} />
+                <Widget key={w.id} id={w.id} config={w.config} />
               ) : (
                 <WidgetCard key={w.id} title={w.widgetType}>
                   <p className="muted">Coming soon</p>

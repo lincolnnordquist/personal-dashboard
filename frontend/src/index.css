@@ -188,6 +188,24 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.notes-textarea {
+  display: block;
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.notes-textarea::placeholder {
+  color: var(--muted);
+}
+
 .tabs {
   display: flex;
   flex-wrap: wrap;

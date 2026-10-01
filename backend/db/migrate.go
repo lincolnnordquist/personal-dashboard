@@ -108,6 +108,14 @@ INSERT INTO widget_config (widget_type, config, position, layout_column)
 SELECT 'quicklinks', '{}', 0, 'left'
 WHERE EXISTS (SELECT 1 FROM widget_config)
   AND NOT EXISTS (SELECT 1 FROM widget_config WHERE widget_type = 'quicklinks');`,
+
+	// 7: notes widget. A single scratchpad textarea; its text is stored as {"content": "..."}
+	// in the existing config column via updateWidgetConfig, so there is no new table.
+	`
+INSERT INTO widget_config (widget_type, config, position, layout_column)
+SELECT 'notes', '{}', 1, 'right'
+WHERE EXISTS (SELECT 1 FROM widget_config)
+  AND NOT EXISTS (SELECT 1 FROM widget_config WHERE widget_type = 'notes');`,
 }
 
 // Connect opens a connection pool, retrying while Postgres finishes starting up.
@@ -213,5 +221,6 @@ func defaultWidgets(cfg *config.Config) []seedWidget {
 			"location": cfg.DefaultLocationName,
 			"unit":     "F",
 		}},
+		{"notes", "right", map[string]any{}},
 	}
 }
