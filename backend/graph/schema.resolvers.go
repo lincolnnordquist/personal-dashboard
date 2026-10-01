@@ -38,6 +38,15 @@ func (r *mutationResolver) ToggleWidget(ctx context.Context, id int, enabled boo
 	return w, err
 }
 
+// MoveWidget is the resolver for the moveWidget field.
+func (r *mutationResolver) MoveWidget(ctx context.Context, id int, column string, position int) (*db.WidgetConfig, error) {
+	w, err := r.WidgetRepo.MoveWidget(ctx, id, column, position)
+	if errors.Is(err, db.ErrNotFound) {
+		return nil, fmt.Errorf("widget %d not found", id)
+	}
+	return w, err
+}
+
 // CreatePlaylist is the resolver for the createPlaylist field.
 func (r *mutationResolver) CreatePlaylist(ctx context.Context, name string) (*db.Playlist, error) {
 	return r.Music.CreatePlaylist(ctx, name)

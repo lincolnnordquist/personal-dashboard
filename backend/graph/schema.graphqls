@@ -32,6 +32,8 @@ type Query {
 type Mutation {
   updateWidgetConfig(id: Int!, config: JSON!, position: Int): WidgetConfig!
   toggleWidget(id: Int!, enabled: Boolean!): WidgetConfig!
+  "Moves a widget to a position within a column (possibly a different column than it's in now), shifting the other widgets in both columns to keep positions contiguous."
+  moveWidget(id: Int!, column: String!, position: Int!): WidgetConfig!
   createPlaylist(name: String!): Playlist!
   renamePlaylist(id: Int!, name: String!): Playlist!
   "Sets the background theme shown while this playlist is selected. A null theme mixes all themes."

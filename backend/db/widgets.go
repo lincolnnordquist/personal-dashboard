@@ -66,6 +66,74 @@ func (r *WidgetRepo) UpdateConfig(ctx context.Context, id int, config map[string
 		id, raw, position)
 }
 
+// MoveWidget moves a widget to a position within a column, possibly a different column than
+// it's in now, closing the gap it leaves behind and opening one at its destination so every
+// column's positions stay contiguous.
+func (r *WidgetRepo) MoveWidget(ctx context.Context, id int, column string, position int) (*WidgetConfig, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	var fromColumn string
+	var fromPosition int
+	if err := tx.QueryRow(ctx, `SELECT layout_column, position FROM widget_config WHERE id = $1`, id).
+		Scan(&fromColumn, &fromPosition); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE widget_config SET position = position - 1 WHERE layout_column = $1 AND position > $2`,
+		fromColumn, fromPosition); err != nil {
+		return nil, err
+	}
+
+	// Clamp to the destination column's size (it may be the column the widget just left).
+	var count int
+	if err := tx.QueryRow(ctx,
+		`SELECT COUNT(*) FROM widget_config WHERE layout_column = $1 AND id != $2`, column, id,
+	).Scan(&count); err != nil {
+		return nil, err
+	}
+	position = clamp(position, 0, count)
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE widget_config SET position = position + 1 WHERE layout_column = $1 AND position >= $2 AND id != $3`,
+		column, position, id); err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.Query(ctx,
+		`UPDATE widget_config SET layout_column = $2, position = $3, updated_at = NOW()
+		 WHERE id = $1 RETURNING `+widgetColumns,
+		id, column, position)
+	if err != nil {
+		return nil, err
+	}
+	w, err := pgx.CollectExactlyOneRow(rows, scanWidget)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return w, nil
+}
+
+func clamp(v, lo, hi int) int {
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
+}
+
 func (r *WidgetRepo) SetEnabled(ctx context.Context, id int, enabled bool) (*WidgetConfig, error) {
 	return r.one(ctx,
 		`UPDATE widget_config SET enabled = $2, updated_at = NOW() WHERE id = $1 RETURNING `+widgetColumns,

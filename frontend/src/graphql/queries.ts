@@ -34,6 +34,19 @@ export const UPDATE_WIDGET_CONFIG: TypedDocumentNode<
   }
 `
 
+export const MOVE_WIDGET: TypedDocumentNode<
+  { moveWidget: { id: number; column: WidgetConfig['column']; position: number } },
+  { id: number; column: string; position: number }
+> = gql`
+  mutation MoveWidget($id: Int!, $column: String!, $position: Int!) {
+    moveWidget(id: $id, column: $column, position: $position) {
+      id
+      column
+      position
+    }
+  }
+`
+
 export type TemperatureUnit = 'F' | 'C'
 
 export interface WeatherData {

@@ -88,6 +88,7 @@ type ComplexityRoot struct {
 		AddSong            func(childComplexity int, playlistID int, url string) int
 		CreatePlaylist     func(childComplexity int, name string) int
 		DeletePlaylist     func(childComplexity int, id int) int
+		MoveWidget         func(childComplexity int, id int, column string, position int) int
 		RemoveSong         func(childComplexity int, id int) int
 		RenamePlaylist     func(childComplexity int, id int, name string) int
 		SaveQuickLinks     func(childComplexity int, version string, groups []*links.QuickLinkGroupInput) int
@@ -245,6 +246,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	UpdateWidgetConfig(ctx context.Context, id int, config map[string]any, position *int) (*db.WidgetConfig, error)
 	ToggleWidget(ctx context.Context, id int, enabled bool) (*db.WidgetConfig, error)
+	MoveWidget(ctx context.Context, id int, column string, position int) (*db.WidgetConfig, error)
 	CreatePlaylist(ctx context.Context, name string) (*db.Playlist, error)
 	RenamePlaylist(ctx context.Context, id int, name string) (*db.Playlist, error)
 	SetPlaylistTheme(ctx context.Context, id int, theme *string) (*db.Playlist, error)
@@ -491,6 +493,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeletePlaylist(childComplexity, args["id"].(int)), true
+	case "Mutation.moveWidget":
+		if e.ComplexityRoot.Mutation.MoveWidget == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_moveWidget_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.MoveWidget(childComplexity, args["id"].(int), args["column"].(string), args["position"].(int)), true
 	case "Mutation.removeSong":
 		if e.ComplexityRoot.Mutation.RemoveSong == nil {
 			break
@@ -1739,6 +1752,36 @@ func (ec *executionContext) field_Mutation_deletePlaylist_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_moveWidget_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (int, error) {
+			return ec.unmarshalNInt2int(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "column",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["column"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "position",
+		func(ctx context.Context, v any) (int, error) {
+			return ec.unmarshalNInt2int(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["position"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_removeSong_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2831,6 +2874,50 @@ func (ec *executionContext) fieldContext_Mutation_toggleWidget(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_toggleWidget_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_moveWidget(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_moveWidget(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().MoveWidget(ctx, fc.Args["id"].(int), fc.Args["column"].(string), fc.Args["position"].(int))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *db.WidgetConfig) graphql.Marshaler {
+			return ec.marshalNWidgetConfig2ᚖdashboardᚋdbᚐWidgetConfig(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_moveWidget(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_WidgetConfig(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_moveWidget_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6993,6 +7080,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "toggleWidget":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_toggleWidget(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "moveWidget":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_moveWidget(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

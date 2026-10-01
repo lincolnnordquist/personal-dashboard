@@ -1151,6 +1151,46 @@ body {
   opacity: 1;
 }
 
+/* The widget needs its own stacking context for the drag handle badge below to anchor to. */
+.widget-section {
+  position: relative;
+}
+
+/* A small badge poking out of the card's corner, clear of whatever's in the heading itself
+   (tabs, the quick-links edit pencil, ...). Drag it to move the widget around the grid. */
+.drag-handle {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 2;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(6px);
+  cursor: grab;
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* No hover on touch, so the handle must stay visible to be discoverable there. */
+@media (hover: none) {
+  .drag-handle {
+    opacity: 1;
+  }
+}
+
+.widget-drag-preview {
+  width: 280px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  cursor: grabbing;
+}
+
+.widget-drag-preview .widget {
+  min-height: 80px;
+}
+
 /* Quick links: a speed dial of site icons. */
 .quicklinks {
   display: grid;
