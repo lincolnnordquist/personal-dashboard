@@ -4,17 +4,15 @@ import {
   closestCorners,
   DndContext,
   DragOverlay,
-  MeasuringStrategy,
   PointerSensor,
   TouchSensor,
   useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
-  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { MOVE_WIDGET, type WidgetConfig } from '../graphql/queries'
 import { shortcutsBlocked } from '../lib/keyboard'
@@ -45,6 +43,13 @@ const widgetComponents: Record<string, ComponentType<WidgetProps>> = {
   youtube: YouTubeWidget,
   notes: NotesWidget,
 }
+
+// Hoisted so these are referentially stable across renders. useSensor/useSensors only memoize
+// when their inputs are (`[sensor, options]` / the sensor list), so passing a fresh object
+// literal here every render defeated that memoization, making `sensors` (and everything
+// @dnd-kit keys off it internally) a new array on every single render.
+const POINTER_SENSOR_OPTIONS = { activationConstraint: { distance: 4 } }
+const TOUCH_SENSOR_OPTIONS = { activationConstraint: { delay: 150, tolerance: 5 } }
 
 const WIDGET_LABELS: Record<string, string> = {
   quicklinks: 'Quick Links',
@@ -95,12 +100,9 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
   const [editing, setEditing] = useState(false)
   const byId = new Map(widgets.map((w) => [w.id, w]))
 
-  // The source of truth while dragging. onDragOver and onDragEnd can both fire, sometimes more
-  // than once each, before React commits a single re-render -- reading `layout` (state) directly
-  // in those handlers meant some of those calls saw a stale snapshot from before an earlier call
-  // in the same batch had applied. A wide, item-dense column (the center one) generates far more
-  // of these events per drag, which is why that was the one that kept crashing. The ref is
-  // mutated synchronously, so every handler call sees exactly what the last one left behind.
+  // Mirrors `layout`, updated synchronously (unlike state, which only takes effect on the next
+  // render) so handleDragEnd always reads the true current layout, never a stale snapshot from
+  // before an earlier update in the same event batch had applied.
   const layoutRef = useRef(layout)
   function applyLayout(next: Layout) {
     layoutRef.current = next
@@ -123,56 +125,49 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
   }, [editing])
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+    useSensor(PointerSensor, POINTER_SENSOR_OPTIONS),
+    useSensor(TouchSensor, TOUCH_SENSOR_OPTIONS),
   )
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(Number(event.active.id))
   }
 
-  // Dragging across a column boundary moves the item between the two columns' arrays right
-  // away, so the layout visibly reflows as you drag instead of only snapping on drop.
-  function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event
-    if (!over) return
-    const activeId = Number(active.id)
-    const overId = over.id
-
-    const prev = layoutRef.current
-    const fromColumn = columnOf(prev, activeId)
-    const toColumn = columnOf(prev, overId)
-    if (!fromColumn || !toColumn || fromColumn === toColumn) return
-
-    const from = prev[fromColumn].filter((id) => id !== activeId)
-    const to = [...prev[toColumn]]
-    const overIndex = to.indexOf(Number(overId))
-    to.splice(overIndex >= 0 ? overIndex : to.length, 0, activeId)
-    applyLayout({ ...prev, [fromColumn]: from, [toColumn]: to })
-  }
-
+  // The layout only changes once, here at drop -- not live during onDragOver. An earlier version
+  // moved the item between columns' arrays on every onDragOver, so dragging across a column
+  // boundary meant React unmounting it from the source column and remounting it in the
+  // destination mid-drag. That's a real DOM mutation, and @dnd-kit's own internal rect tracking
+  // (`useRect`, used for the dragged node and its container) watches the whole document body with
+  // a MutationObserver to stay current -- the remount reliably retriggered it, and the resulting
+  // state update could trigger another commit that mutated the DOM again, which is the actual
+  // "Maximum update depth exceeded" crash (confirmed with a scripted repro against a dev build:
+  // the loop was entirely inside @dnd-kit's measureRect, not in this component's own effects).
+  // Settling the move only at drop means the real DOM never changes until the gesture is over;
+  // @dnd-kit's own SortableContext strategy still animates same-column reordering live, since
+  // that's done with CSS transforms, not by us touching the array mid-drag.
   function handleDragEnd(event: DragEndEvent) {
     setActiveId(null)
     const { active, over } = event
     if (!over) return
     const activeId = Number(active.id)
-    // The item is already in its destination column's array either way (onDragOver put it there
-    // for a cross-column move, and it was there all along for a same-column reorder).
     const prev = layoutRef.current
-    const column = columnOf(prev, over.id)
-    if (!column) return
+    const fromColumn = columnOf(prev, activeId)
+    const toColumn = columnOf(prev, over.id)
+    if (!fromColumn || !toColumn) return
 
-    const items = prev[column]
-    const oldIndex = items.indexOf(activeId)
-    if (oldIndex === -1) return
-    const newIndex = isColumn(over.id) ? items.length - 1 : items.indexOf(Number(over.id))
-    const finalItems = newIndex === -1 || newIndex === oldIndex ? items : arrayMove(items, oldIndex, newIndex)
-    if (finalItems !== items) {
-      applyLayout({ ...prev, [column]: finalItems })
+    const destBase = prev[toColumn].filter((id) => id !== activeId)
+    const overIndex = isColumn(over.id) ? destBase.length : destBase.indexOf(Number(over.id))
+    const insertAt = overIndex === -1 ? destBase.length : overIndex
+    const destItems = [...destBase.slice(0, insertAt), activeId, ...destBase.slice(insertAt)]
+
+    const next: Layout = { ...prev, [toColumn]: destItems }
+    if (fromColumn !== toColumn) {
+      next[fromColumn] = prev[fromColumn].filter((id) => id !== activeId)
     }
+    applyLayout(next)
 
-    const position = finalItems.indexOf(activeId)
-    moveWidget({ variables: { id: activeId, column, position } }).catch(() => {
+    const position = destItems.indexOf(activeId)
+    moveWidget({ variables: { id: activeId, column: toColumn, position } }).catch(() => {
       applyLayout(layoutFromWidgets(widgets))
     })
   }
@@ -193,12 +188,7 @@ export default function Grid({ widgets }: { widgets: WidgetConfig[] }) {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
-        // The center column's widgets (Reddit, YouTube, Sports) load their content
-        // asynchronously and can resize mid-drag; re-measuring continuously instead of once at
-        // drag start keeps collision detection accurate if that happens.
-        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
         onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
         <div className={editing ? 'columns columns-editing' : 'columns'}>
